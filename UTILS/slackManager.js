@@ -16,7 +16,7 @@ module.exports.post = POST_MESSAGE;
 function INITIALIZE() {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			await bot = new Slack( { token } );
+			bot = await new Slack( { wToken } );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
