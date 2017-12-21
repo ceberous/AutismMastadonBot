@@ -157,7 +157,7 @@ function SEARCH_SINGLE_KARGER_ARTICLE( wURL ) {
 			
 			var wBody = await MakeRequest( wURL );
 			try { var $ = cheerio.load( wBody ); }
-			catch( err ) { resolve( "cheerio load failed" ); return; }
+			catch( err ) { resolve( "fail" ); return; }
 
 			var wDOI = $( ".articleDetails" ).children();
 			wDOI = $( wDOI[1] ).children();
@@ -166,7 +166,7 @@ function SEARCH_SINGLE_KARGER_ARTICLE( wURL ) {
 			wDOI = wDOI.split( "https://doi.org/" )[1];
 			resolve( wDOI );
 		}
-		catch( error ) { console.log( error ); reject( error ); }
+		catch( error ) { console.log( error ); resolve( "fail" ); }
 	});
 }
 
@@ -190,7 +190,9 @@ function SEARCH() {
 			for ( var i = 0; i < wResults.length; ++i ) {
 				wResults[ i ][ "doi" ] = wMetaURLS[ i ];
 				wResults[ i ][ "doiB64" ] = EncodeB64( wMetaURLS[ i ] );
-				wResults[ i ][ "scihubURL" ] = SCI_HUB_BASE_URL + wMetaURLS[ i ];
+				if ( wMetaURLS[ i ] !== "fail" ) {
+					wResults[ i ][ "scihubURL" ] = SCI_HUB_BASE_URL + wMetaURLS[ i ];
+				}
 			}
 
 			// 3.) Compare to Already 'Tracked' DOIs and Store Uneq

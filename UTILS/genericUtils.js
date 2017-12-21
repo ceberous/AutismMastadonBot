@@ -4,14 +4,12 @@ module.exports.wSleep = W_SLEEP;
 function PRINT_NOW_TIME() {
 	var today = new Date();
 	var wTY = today.getFullYear();
-	var wTM = ( today.getMonth() + 1 );
+	var wTMO = ( today.getMonth() + 1 );
 	var wTD = today.getDate();
 	var wTH = today.getHours();
 	var wTM = today.getMinutes();
-	console.log(  wTY + "-" + wTM + "-" + wTD + " === " + wTH + ":" + wTM + "\n" );
+	console.log(  wTY + "-" + wTMO + "-" + wTD + " === " + wTH + ":" + wTM + "\n" );
 }
-
-
 module.exports.printNowTime = PRINT_NOW_TIME;
 
 module.exports.encodeBase64 = function( wString ) {

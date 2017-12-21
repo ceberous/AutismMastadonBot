@@ -16,6 +16,8 @@ var JOB_IDS = [];
 	console.log( "RedisManager Ready" );
 	await require( "./UTILS/mastadonManager.js" ).initialize();
 	console.log( "MastadonManager Ready" );
+	await require( "./UTILS/slackManager.js" ).initialize();
+	console.log( "SlackManager Ready" );
 
 	// Once Per Day Scanners
 	JOB_IDS.push({ // large
@@ -110,15 +112,15 @@ var JOB_IDS = [];
 		}
 	)});
 
-	JOB_IDS.push({ // fast-xml-feed
+	JOB_IDS.push({ // fast-xml-feed , but slow server
 		name: "KARGER_COM" ,
-		pid: schedule.scheduleJob( "45 */1 * * *" , async function() {
+		pid: schedule.scheduleJob( "45 */3 * * *" , async function() {
 			await require( "./SCANNERS/karger.js" ).search();
 		}
 	)});
 
 	JOB_IDS.push({ // fast-xml-feed
-		name: "KARGER_COM" ,
+		name: "FRONTIERSIN_COM" ,
 		pid: schedule.scheduleJob( "47 */1 * * *" , async function() {
 			await require( "./SCANNERS/frontiersin.js" ).search();
 		}
