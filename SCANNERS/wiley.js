@@ -33,7 +33,7 @@ function CUSTOM_RESULT_PAGE_PARSER( wBody ) {
 					title: wTitle ,
 					doi: wDOI ,
 					doiB64: EncodeB64( wDOI ) ,
-					mainURL: WILEY_ARTICLE_BASE_URL + wDOI ,
+					mainURL: WILEY_ARTICLE_BASE_URL + wDOI + "/abstract" ,
 					scihubURL: SCI_HUB_BASE_URL + wDOI ,
 				});
 			});
