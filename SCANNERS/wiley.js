@@ -7,6 +7,7 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
+const WILEY_ARTICLE_BASE_URL = "http://onlinelibrary.wiley.com/doi/";
 const DX_DOI_BASE_URL = "http://dx.doi.org";
 const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
 
@@ -32,7 +33,7 @@ function CUSTOM_RESULT_PAGE_PARSER( wBody ) {
 					title: wTitle ,
 					doi: wDOI ,
 					doiB64: EncodeB64( wDOI ) ,
-					mainURL: DX_DOI_BASE_URL + "/" + wDOI ,
+					mainURL: WILEY_ARTICLE_BASE_URL + wDOI ,
 					scihubURL: SCI_HUB_BASE_URL + wDOI ,
 				});
 			});
