@@ -135,26 +135,19 @@ var JOB_IDS = [];
 	await require( "./UTILS/redisManager.js" ).initialize();
 	PrintNowTime = require( "./UTILS/genericUtils.js" ).printNowTime;
 	
-	// JOB_IDS.push({ 
-	// 	name: "DAYLIES" ,
-	// 	pid: schedule.scheduleJob( { hour: 0 , minute: 1 } , ()=> { SCAN_EVERYTHING(); } )
-	// });
+	JOB_IDS.push({ 
+		name: "DAYLIES" ,
+		pid: schedule.scheduleJob( { hour: 0 , minute: 1 } , ()=> { SCAN_EVERYTHING(); } )
+	});
 
-	// JOB_IDS.push({ 
-	// 	name: "TWICE_DAYLIES_SCANS" ,
-	// 	pid: schedule.scheduleJob( "40 1,12 * * *" , ()=> { SCAN_TWICE_DAYLIES(); } )
-	// });
+	JOB_IDS.push({ 
+		name: "TWICE_DAYLIES_SCANS" ,
+		pid: schedule.scheduleJob( "40 1,12 * * *" , ()=> { SCAN_TWICE_DAYLIES(); } )
+	});
 
-	// JOB_IDS.push({ 
-	// 	name: "HOURLY_SCANS" ,
-	// 	pid: schedule.scheduleJob( "1 1-23 * * *" , ()=> { SCAN_HOURLIES(); } )
-	// });
-
-	//SCAN_HOURLIES();
-
-	// JOB_IDS.push({ 
-	// 	name: "DAYLIES" ,
-	// 	pid: schedule.scheduleJob( { hour: 2 , minute: 37 } , ()=> { SCAN_HOURLIES(); } )
-	// });
+	JOB_IDS.push({ 
+		name: "HOURLY_SCANS" ,
+		pid: schedule.scheduleJob( "1 1-23 * * *" , ()=> { SCAN_HOURLIES(); } )
+	});
 
 })();

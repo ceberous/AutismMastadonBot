@@ -24,6 +24,3 @@ function INITIALIZE() {
 	});
 }
 module.exports.initialize = INITIALIZE;
-( async ()=> {
-	await INITIALIZE();
-})();
