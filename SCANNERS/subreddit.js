@@ -2,7 +2,7 @@ const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
 const { map } = require( "p-iteration" );
 const PostResults = require( "../UTILS/mastadonManager.js" ).emumerateStatusPosts;
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
-const redis = require( "../UTILS/redisManager.js" ).redis;
+const redis = require( "../UTILS/redisManager.js" ).redisClient;
 const RU = require( "../UTILS/redisUtils.js" );
 
 function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }

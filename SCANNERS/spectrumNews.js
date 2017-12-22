@@ -64,26 +64,29 @@ function SEARCH() {
 			wResults = await PARSE_XML_RESULTS( wResults );
 
 			// 2.) Compare to Already 'Tracked' DOIs and Store Uneq
-			wResults = FilterUNEQResultsREDIS( wResults );
+			wResults = await FilterUNEQResultsREDIS( wResults );
 
 			// 3.) Post Results
-			var wFormattedTweets = [];
-			for ( var i = 0; i < wResults.length; ++i ) {
-				var wMessage = "#AutismResearch ";
-				if ( wResults[i].title.length > 460 ) {
-					wMessage = wMessage + wResults[i].title.substring( 0 , 457 );
-					wMessage = wMessage + "...";
+			if ( wResults ) {
+				console.log( wResults );
+				var wFormattedTweets = [];
+				for ( var i = 0; i < wResults.length; ++i ) {
+					var wMessage = "#AutismResearch ";
+					if ( wResults[i].title.length > 460 ) {
+						wMessage = wMessage + wResults[i].title.substring( 0 , 457 );
+						wMessage = wMessage + "...";
+					}
+					else {
+						wMessage = wMessage + wResults[i].title.substring( 0 , 460 );
+					}
+					if ( wResults[i].mainURL ) {
+						wMessage = wMessage + " " + wResults[i].mainURL;
+					}
+					wFormattedTweets.push( wMessage );
 				}
-				else {
-					wMessage = wMessage + wResults[i].title.substring( 0 , 460 );
-				}
-				if ( wResults[i].mainURL ) {
-					wMessage = wMessage + " " + wResults[i].mainURL;
-				}
-				wFormattedTweets.push( wMessage );
-			}
-			console.log( wFormattedTweets );
-			await PostResults( wFormattedTweets );
+				console.log( wFormattedTweets );
+				await PostResults( wFormattedTweets );
+			}			
 
 			console.log( "\nSpectrumNews.org Scan Finished" );
 			console.log( "" );

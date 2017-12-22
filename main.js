@@ -7,135 +7,154 @@ process.on( "uncaughtException" , function( err ) {
 	console.trace();
 });
 
+
+function SCAN_DAYLIES() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.log( "DAYLIES_SCANS STARTED" );
+			PrintNowTime();			
+			await require( "./SCANNERS/plos.js" ).search();
+			await require( "./SCANNERS/cell.js" ).search( "month" );
+			console.log( "DAYLIES_SCANS FINISHED" );
+			PrintNowTime();					
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function SCAN_TWICE_DAYLIES() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.log( "TWICE_DAYLIES_SCANS STARTED" );
+			PrintNowTime();
+			await require( "./SCANNERS/scienceDirect.js" ).search();
+			await require( "./SCANNERS/jmir.js" ).search();
+			console.log( "TWICE_DAYLIES_SCANS FINISHED" );
+			PrintNowTime();			
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function SCAN_THREE_HOUR() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function SCAN_HOURLIES() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.log( "HOURLY SCAN STARTED" );
+			PrintNowTime();
+			try{ await require( "./SCANNERS/pubmed.js" ).search( [ "autism" , "autistic" ] ); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/subreddit.js" ).search( [ "science" , "new" , [ "autis" ] ] ); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/subreddit.js" ).search( [ "science" , "top" , [ "autis" ] ] ); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/nature.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/mdpi.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/wiley.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/oup.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/spectrumNews.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/springer.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/karger.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/frontiersin.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/biorxiv.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			console.log( "HOURLY SCAN FINISHED" );
+			PrintNowTime();			
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function SCAN_EVERYTHING() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			try{ await require( "./SCANNERS/plos.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/cell.js" ).search( "month" ); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/scienceDirect.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/jmir.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/pubmed.js" ).search( [ "autism" , "autistic" ] ); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/subreddit.js" ).search( [ "science" , "new" , [ "autis" ] ] ); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/subreddit.js" ).search( [ "science" , "top" , [ "autis" ] ] ); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/nature.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/mdpi.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/wiley.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/oup.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/spectrumNews.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/springer.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/karger.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/frontiersin.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/biorxiv.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+var PrintNowTime = null;
 const schedule = require( "node-schedule" );
 var JOB_IDS = [];
 
+// Init
 ( async ()=> {
 
 	await require( "./UTILS/redisManager.js" ).initialize();
-	console.log( "RedisManager Ready" );
-	await require( "./UTILS/mastadonManager.js" ).initialize();
-	console.log( "MastadonManager Ready" );
-	await require( "./UTILS/slackManager.js" ).initialize();
-	console.log( "SlackManager Ready" );
-
-	// Once Per Day Scanners
-	JOB_IDS.push({ // large
-		name: "PLOS_ORG" ,
-		pid: schedule.scheduleJob( { hour: 0 , minute: 5 } , async function() {
-			await require( "./SCANNERS/plos.js" ).search();
-		}
-	)});
-	JOB_IDS.push({ 
-		name: "CELL_COM" ,
-		pid: schedule.scheduleJob( { hour: 0 , minute: 10 } , async function() {
-			await require( "./SCANNERS/cell.js" ).search( "month" );
-		}
-	)});
-
-
-	// Twice Per Day Scannners
-	JOB_IDS.push({ 
-		name: "SCIENCE_DIRECT" ,
-		pid: schedule.scheduleJob( "10 6,12 * * *" , async function() {
-			await require( "./SCANNERS/scienceDirect.js" ).search();
-		}
-	)});
-	JOB_IDS.push({ 
-		name: "JMIR_COM" ,
-		pid: schedule.scheduleJob( "15 6,12 * * *" , async function() {
-			await require( "./SCANNERS/jmir.js" ).search();
-		}
-	)});
-
-
-	// Hourly accept hour 0 , because of space for daily
-	JOB_IDS.push({ 
-		name: "PUB_MED_HOURLY" ,
-		pid: schedule.scheduleJob( "1 1-23 * * *" , async function() {
-			await require( "./SCANNERS/pubmed.js" ).search( [ "autism" , "autistic" ] );
-		}
-	)});
-	JOB_IDS.push({
-		name: "SUBREDDIT_NEW" ,
-		pid: schedule.scheduleJob( "05 1-23 * * *" , async function() {
-			await require( "./SCANNERS/subreddit.js" ).search( [ "science" , "new" , [ "autis" ] ] );
-		}
-	)});
-
-	JOB_IDS.push({
-		name: "SUBREDDIT_TOP" ,
-		pid: schedule.scheduleJob( "10 1-23 * * *" , async function() {
-			await require( "./SCANNERS/subreddit.js" ).search( [ "science" , "top" , [ "autis" ] ] );
-		}
-	)});
-
-	JOB_IDS.push({ 
-		name: "NATURE_HOURLY" ,
-		pid: schedule.scheduleJob( "15 1-23 * * *" , async function() {
-			await require( "./SCANNERS/nature.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ 
-		name: "MDPI_COM" ,
-		pid: schedule.scheduleJob( "20 1-23 * * *" , async function() {
-			await require( "./SCANNERS/mdpi.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ 
-		name: "WILEY_COM" ,
-		pid: schedule.scheduleJob( "25 */1 * * *" , async function() {
-			await require( "./SCANNERS/wiley.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ 
-		name: "OXFORD_ACADEMIC" ,
-		pid: schedule.scheduleJob( "30 */1 * * *" , async function() {
-			await require( "./SCANNERS/oup.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ // fast-xml-feed
-		name: "SPECTRUM_NEWS" ,
-		pid: schedule.scheduleJob( "35 */1 * * *" , async function() {
-			await require( "./SCANNERS/spectrumNews.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ // fast-xml-feed
-		name: "SPRINGER_COM" ,
-		pid: schedule.scheduleJob( "40 */1 * * *" , async function() {
-			await require( "./SCANNERS/springer.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ // fast-xml-feed , but slow server
-		name: "KARGER_COM" ,
-		pid: schedule.scheduleJob( "45 */3 * * *" , async function() {
-			await require( "./SCANNERS/karger.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ // fast-xml-feed
-		name: "FRONTIERSIN_COM" ,
-		pid: schedule.scheduleJob( "47 */1 * * *" , async function() {
-			await require( "./SCANNERS/frontiersin.js" ).search();
-		}
-	)});
-
-	JOB_IDS.push({ // fast-xml-feed
-		name: "BIORXIV_ORG" ,
-		pid: schedule.scheduleJob( "50 */1 * * *" , async function() {
-			await require( "./SCANNERS/biorxiv.js" ).search();
-		}
-	)});
+	PrintNowTime = require( "./UTILS/genericUtils.js" ).printNowTime;
 	
+	// JOB_IDS.push({ 
+	// 	name: "DAYLIES" ,
+	// 	pid: schedule.scheduleJob( { hour: 0 , minute: 1 } , ()=> { SCAN_EVERYTHING(); } )
+	// });
 
-	// Odd-Hour-Daily Scanners
-	// 1,3,5,7,9,11,13,15,17,19,21,23
+	// JOB_IDS.push({ 
+	// 	name: "TWICE_DAYLIES_SCANS" ,
+	// 	pid: schedule.scheduleJob( "40 1,12 * * *" , ()=> { SCAN_TWICE_DAYLIES(); } )
+	// });
 
+	// JOB_IDS.push({ 
+	// 	name: "HOURLY_SCANS" ,
+	// 	pid: schedule.scheduleJob( "1 1-23 * * *" , ()=> { SCAN_HOURLIES(); } )
+	// });
+
+	//SCAN_HOURLIES();
+
+	// JOB_IDS.push({ 
+	// 	name: "DAYLIES" ,
+	// 	pid: schedule.scheduleJob( { hour: 2 , minute: 37 } , ()=> { SCAN_HOURLIES(); } )
+	// });
 
 })();

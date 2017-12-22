@@ -134,20 +134,27 @@ function FETCH_XML_FEED( wURL ) {
 module.exports.fetchXMLFeed = FETCH_XML_FEED;
 
 
-const redis = require( "../UTILS/redisManager.js" ).redis;
+const redis = require( "./redisManager.js" ).redisClient;
 const RU = require( "../UTILS/redisUtils.js" );
 const R_GLOBAL_ALREADY_TRACKED_DOIS = "SCANNERS.GLOBAL.ALREADY_TRACKED.DOIS";
 function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
+			if ( !wCommonResults ) { resolve( [] ); return; }
+			if ( wCommonResults.length < 1 ) { resolve( [] ); return; }
+			console.log( wCommonResults );
+
 			// 1.) Generate Random-Temp Key
 			var wTempKey = Math.random().toString(36).substring(7);
 			var R_PLACEHOLDER = "SCANNERS." + wTempKey + ".PLACEHOLDER";
 			var R_NEW_TRACKING = "SCANNERS." + wTempKey + ".NEW_TRACKING";
+			console.log( R_PLACEHOLDER );
+			console.log( R_NEW_TRACKING );
 
 			// 2.) Compare to Already 'Tracked' DOIs and Store Uneq
 			var b64_DOIS = wCommonResults.map( x => x[ "doiB64" ] );
+			//console.log( b64_DOIS );
 			await RU.setSetFromArray( redis , R_PLACEHOLDER , b64_DOIS );
 			await RU.setDifferenceStore( redis , R_NEW_TRACKING , R_PLACEHOLDER , R_GLOBAL_ALREADY_TRACKED_DOIS );
 			await RU.delKey( redis , R_PLACEHOLDER );
@@ -157,23 +164,22 @@ function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 			const wNewTracking = await RU.getFullSet( redis , R_NEW_TRACKING );
 			if ( !wNewTracking ) { 
 				await RU.delKey( redis , R_NEW_TRACKING ); 
-				// console.log( "nothing new found" ); 
-				// PRINT_NOW_TIME(); 
-				resolve();
+				console.log( "nothing new found" ); 
+				PRINT_NOW_TIME(); 
+				resolve( [] );
 				return;
 			}
 			if ( wNewTracking.length < 1 ) {
 				await RU.delKey( redis , R_NEW_TRACKING );
-				// console.log( "nothing new found" ); 
-				// PRINT_NOW_TIME();				
-				resolve();
+				console.log( "nothing new found" ); 
+				PRINT_NOW_TIME();
+				resolve( [] );
 				return;
 			}
-
+			console.log( "are we here ??" );
 			// 4.) Filter Out Results to Return 'New-Valid' Tweets
 			wCommonResults = wCommonResults.filter( x => wNewTracking.indexOf( x[ "doiB64" ] ) !== -1 );
 			await RU.delKey( redis , R_NEW_TRACKING );
-
 			resolve( wCommonResults );
 
 		}

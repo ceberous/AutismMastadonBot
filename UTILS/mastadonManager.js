@@ -26,8 +26,8 @@ module.exports.postStatus = POST_STATUS;
 function ENUMERATE_STATUS_POSTS( wResults ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			if ( !wResults ) { return; }
-			if ( wResults.length < 1 ) { return; }
+			if ( !wResults ) { resolve(); return; }
+			if ( wResults.length < 1 ) { resolve(); return; }
 			for ( var i = 0; i < wResults.length; ++i ) {
 				await POST_STATUS( wResults[ i ] );
 				await require( "./slackManager.js" ).post( wResults[ i ] , "#autism" );
@@ -42,6 +42,7 @@ module.exports.emumerateStatusPosts = ENUMERATE_STATUS_POSTS;
 function FORMAT_PAPERS_AND_POST( wResults ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			
 			if ( !wResults ) { resolve(); return; }
 			var wFormattedStatuses = [];
 			for ( var i = 0; i < wResults.length; ++i ) {
@@ -92,9 +93,13 @@ function INITIALIZE() {
 				timeout_ms: ( 60 * 1000 ) ,
 				api_url: creds.api_url
 			});
+			console.log( "Mastadon Client Ready" );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
 module.exports.initialize = INITIALIZE;
+( async ()=> {
+	INITIALIZE();
+})();
