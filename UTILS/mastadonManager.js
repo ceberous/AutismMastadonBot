@@ -1,3 +1,4 @@
+// https://github.com/jhayley/node-mastodon
 const Masto = require( "mastodon" );
 const slackClient = require( "./slackManager.js" );
 slackClient.initialize();
@@ -102,6 +103,3 @@ function INITIALIZE() {
 	});
 }
 module.exports.initialize = INITIALIZE;
-( async ()=> {
-	INITIALIZE();
-})();

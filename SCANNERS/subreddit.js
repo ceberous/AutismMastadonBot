@@ -86,6 +86,16 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			// 5.) Finally, Search over All Single Comments
 			var wResults = await map( wSingleThreads , wThread => SEARCH_SINGLE_THREAD( wThread ) );
 			wResults = [].concat.apply( [] , wResults );
+			// Ugly as fuck , but I'm sorry
+			var wUneqIDS = [];
+			var wFinalUneq = [];
+			for ( var i = 0; i < wResults.length; ++i ) {
+				if ( wUneqIDS.indexOf( wResults[ i ][ "id" ] ) === -1 ) {
+					wUneqIDS.push( wResults[ i ][ "id" ] );
+					wFinalUneq.push( wResults[ i ] );
+				}
+			}
+			wResults = wFinalUneq;
 
 			// 6.) Filter for 'Un-Posted' Results and Store 'Uneq' ones
 			var wIDS = wResults.map( x => x["id"] );

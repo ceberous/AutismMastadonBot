@@ -105,8 +105,9 @@ var JOB_IDS = [];
 ( async ()=> {
 
 	await require( "./UTILS/redisManager.js" ).initialize();
+	await require( "./UTILS/mastadonManager.js" ).initialize();
 	PrintNowTime = require( "./UTILS/genericUtils.js" ).printNowTime;
-	
+
 	JOB_IDS.push({ 
 		name: "DAYLIES" ,
 		pid: schedule.scheduleJob( { hour: 0 , minute: 1 } , ()=> { SCAN_EVERYTHING(); } )
