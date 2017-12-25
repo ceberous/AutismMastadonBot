@@ -4,8 +4,7 @@ const PostResults = require( "../UTILS/mastadonManager.js" ).emumerateStatusPost
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const redis = require( "../UTILS/redisManager.js" ).redisClient;
 const RU = require( "../UTILS/redisUtils.js" );
-
-function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
+const wSleep = require( "../UTILS/genericUtils.js" ).wSleep;
 
 var wSearchTerms = [];
 var wFinalPosts = [];

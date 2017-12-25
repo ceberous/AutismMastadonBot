@@ -9,8 +9,8 @@ const SPRINGER_SEARCH_URL_P1 = "https://link.springer.com/search.rss?date-facet-
 const SPRINGER_SEARCH_URL_P2 = "&facet-start-year=";
 const SPRINGER_SEARCH_URL_P3 = "&query=autism&dc.title=autism&showAll=true&facet-content-type=%22Article%22";
 
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
 const SPEC_SEARCH_TERMS = [ "autism" , "autistic" , "ASD" ];
 function scanText( wText ) {

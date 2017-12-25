@@ -6,9 +6,9 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 const MPDI_BASE_URL = "http://www.mdpi.com";
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
 
 function PARSE_RESULTS( wBody ) {
 	return new Promise( function( resolve , reject ) {

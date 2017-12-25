@@ -7,9 +7,8 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
 
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
-
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
 const OUP_SEARCH_URL_P1 = "https://academic.oup.com/journals/search-results?f_ContentType=Journal+Article&fl_ArticleTitleExact=autism&fl_SiteID=5567&qb=%7b%22ArticleTitle1%22%3a%22autism%22%2c%22ArticleAbstract2%22%3a%22autism%22%7d&sort=Date+%e2%80%93+Newest+First&rg_ArticleDate=";
 const OUP_SEARCH_URL_P2 = "%20TO%20";

@@ -7,10 +7,10 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
-const WILEY_ARTICLE_BASE_URL = "http://onlinelibrary.wiley.com/doi/";
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
+const WILEY_ARTICLE_BASE_URL = "http://onlinelibrary.wiley.com/doi/";
 const WILEY_SEARCH_URL_BASE = "http://onlinelibrary.wiley.com/advanced/search/results/reentry?scope=allContent&dateRange=inTheLast&inTheLastList=1&startYear=&endYear=&queryStringEntered=false&searchRowCriteria[0].queryString=autism&searchRowCriteria[0].fieldName=publication-title&searchRowCriteria[0].booleanConnector=or&searchRowCriteria[1].queryString=autism&searchRowCriteria[1].fieldName=document-title&searchRowCriteria[1].booleanConnector=or&searchRowCriteria[2].queryString=autism&searchRowCriteria[2].fieldName=abstract&searchRowCriteria[2].booleanConnector=and&publicationFacet=journal&ordering=date&resultsPerPage=20";
 const WILEY_SEARCH_URL_SECONDARY = WILEY_SEARCH_URL_BASE + "&start=";
 

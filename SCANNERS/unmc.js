@@ -6,8 +6,8 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
 const UNMC_SEARCH_URL_BASE = "https://www.unmc.edu/newsfeed/index.php/json/getnews/?f=research&o=0&l=5";
 // "https://www.unmc.edu/newsfeed/index.php/json/getnews/?f=research&o=20&l=5"

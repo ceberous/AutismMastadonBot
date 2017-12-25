@@ -4,10 +4,10 @@ const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 
-const SPECTRUM_NEWS_BASE_URL = "https://spectrumnews.org/feed/";
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
+const SPECTRUM_NEWS_BASE_URL = "https://spectrumnews.org/feed/";
 
 const SPEC_SEARCH_TERMS = [ "autism" , "autistic" , "ASD" ];
 function scanText( wText ) {

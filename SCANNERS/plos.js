@@ -1,16 +1,15 @@
-const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const cheerio = require( "cheerio" );
 const { map } = require( "p-iteration" );
 
+const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const PostResults = require( "../UTILS/mastadonManager.js" ).formatPapersAndPost;
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
+const wSleep = require( "../UTILS/genericUtils.js" ).wSleep;
 
-function wSleep( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
-
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
 // http://collections.plos.org/lockss-manifest
 const JOURNAL_NAMES = [ "plosbiology" , "plosclinicaltrials" , "ploscompbiol" , "plosgenetics" , "plosmedicine" , "plosntds" , "plosone" , "plospathogens" ];

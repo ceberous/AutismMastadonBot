@@ -6,9 +6,8 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
-const MPDI_BASE_URL = "http://www.mdpi.com";
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
 const JMIR_SEARCH_URL_P1 = "http://www.jmir.org/search/searchResult?field%5B%5D=date-accepted&criteria%5B%5D=1&startDate%5B%5D=";
 const JMIR_SEARCH_URL_P2 = "&endDate%5B%5D=";

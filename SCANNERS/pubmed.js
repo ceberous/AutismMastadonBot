@@ -7,7 +7,8 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
 
-const SCI_HUB_BASE_URL = "http://dx.doi.org.sci-hub.tw/";
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
 function getDOICheerio( wPubMedID , wDOIOnly ) {
 	return new Promise( async function( resolve , reject ) {

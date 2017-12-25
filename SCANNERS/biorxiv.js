@@ -6,9 +6,8 @@ const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
-const DX_DOI_BASE_URL = "http://dx.doi.org";
-const SCI_HUB_BASE_URL = DX_DOI_BASE_URL + ".sci-hub.tw/";
-
+const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
+const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
 const BIORXIV_FEED_URLS = [
 	"http://connect.biorxiv.org/biorxiv_xml.php?subject=bioinformatics" ,
