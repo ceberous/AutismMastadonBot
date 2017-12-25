@@ -12,6 +12,8 @@ const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 var wResults = null;
 var wFinalResults = [];
 
+// https://github.com/GoogleChrome/puppeteer
+// https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md#
 function PARSE_PUPPETEER(){
 	return new Promise( function( resolve , reject ) {
 		try {
