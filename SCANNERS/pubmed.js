@@ -111,11 +111,18 @@ function searchPubMedPreviousDay( wSearchTerms ) {
 	const wTY = today.getFullYear();
 	const wTM = ( today.getMonth() + 1 );
 	const wTD = today.getDate();
-	const yesterday = new Date( Date.now() - 86400000 );
-	const wYY = yesterday.getFullYear();
-	const wYM = ( yesterday.getMonth() + 1 );
-	const wYD = yesterday.getDate();
-	
+
+	// const yesterday = new Date( Date.now() - 86400000 );
+	// const wYY = yesterday.getFullYear();
+	// const wYM = ( yesterday.getMonth() + 1 );
+	// const wYD = yesterday.getDate();
+
+	var previous = new Date();
+	previous.setDate( previous.getDate() - 30 ); // Search Previous 30 Days
+	const wYY = today.getFullYear().toString();
+	const wYM = ( previous.getMonth() + 1 );
+	const wYD = previous.getDate();
+
 	var wURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=%28%28%28";
 	const wFinal = wSearchTerms.length - 1;
 	for ( var i = 0; i < wSearchTerms.length; ++i ) {
