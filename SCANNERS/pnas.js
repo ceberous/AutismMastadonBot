@@ -16,7 +16,7 @@ function PARSE_RESULTS( xBody ) {
 		try {
 
 			try { var $ = cheerio.load( xBody ); }
-			catch( err ) { console.log( err ); reject( "cheerio load failed" ); return; }
+			catch( err ) { console.log( err ); resolve( [] ); return; }
 
 			var wResultList = $( ".results-cit-list" );
 			if ( !wResultList ) { console.log( "No Results" ); resolve( [] ); return; }

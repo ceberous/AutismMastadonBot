@@ -27,6 +27,8 @@ module.exports.scan = function() {
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/biorxiv.js" ).search(); }
 			catch( e ) { console.log( e ); }
+			try{ await require( "../SCANNERS/osfIO.js" ).search(); }
+			catch( e ) { console.log( e ); }			
 			console.log( "HOURLY SCAN FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();		
 			resolve();
