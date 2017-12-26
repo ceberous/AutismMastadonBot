@@ -1,6 +1,7 @@
 function W_SLEEP( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 module.exports.wSleep = W_SLEEP;
 
+const MONTH_ABREVIATIONS = require( "../CONSTANTS/generic.js" ).MONTH_ABREVIATIONS;
 function PRINT_NOW_TIME() {
 	var today = new Date();
 	var wTY = today.getFullYear();
@@ -8,7 +9,9 @@ function PRINT_NOW_TIME() {
 	var wTD = today.getDate();
 	var wTH = today.getHours();
 	var wTM = today.getMinutes();
-	console.log(  wTY + "-" + wTMO + "-" + wTD + " === " + wTH + ":" + wTM + "\n" );
+	if ( wTM < 10 ) { wTM = "0" + wTM; }
+	if ( wTH < 10 ) { wTH = "0" + wTH; }
+	console.log(  wTD + "-" + MONTH_ABREVIATIONS[ wTMO - 1 ].toUpperCase() + "-" + wTY + " === " + wTH + ":" + wTM + "\n" );
 	return [ wTY , wTMO , wTD , wTH , wTM ];
 }
 module.exports.printNowTime = PRINT_NOW_TIME;

@@ -8,7 +8,9 @@ module.exports.scan = function() {
 			try{ await require( "../SCANNERS/cell.js" ).search( "month" ); }
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/elsevierhealth.js" ).search(); }
-			catch( e ) { console.log( e ); }			
+			catch( e ) { console.log( e ); }
+			try{ await require( "./SCANNERS/pnas.js" ).search(); }
+			catch( e ) { console.log( e ); }
 			console.log( "DAYLIES_SCANS FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();
 			resolve();
