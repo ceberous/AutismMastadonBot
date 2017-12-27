@@ -4,6 +4,17 @@ const slackClient = require( "./slackManager.js" );
 slackClient.initialize();
 var wMastadonClient = null;
 
+process.on( "unhandledRejection" , function( reason , p ) {
+	console.error( reason, "Unhandled Rejection at Promise" , p );
+	console.trace();
+	slackClient.post( reason.toString() , "#amb-err" );
+});
+process.on( "uncaughtException" , function( err ) {
+	console.error( err , "Uncaught Exception thrown" );
+	console.trace();
+	slackClient.post( err.toString() , "#amb-err" );
+});
+
 // function fetchHomeTimeline() {
 // 	return new Promise( function( resolve , reject ) {
 // 		try {

@@ -34,7 +34,7 @@ function CUSTOM_RESULT_PAGE_PARSER( wBody ) {
 					doi: wDOI ,
 					doiB64: EncodeB64( wDOI ) ,
 					mainURL: WILEY_ARTICLE_BASE_URL + wDOI + "/abstract" ,
-					scihubURL: WILEY_ARTICLE_BASE_URL + wDOI + "/epdf" + " SciHub-Paper: " + SCI_HUB_BASE_URL + wDOI  ,
+					scihubURL: WILEY_ARTICLE_BASE_URL + wDOI + "/epdf" + " Mirror-Paper: " + SCI_HUB_BASE_URL + wDOI  ,
 				});
 			});
 			resolve( finalResults );
