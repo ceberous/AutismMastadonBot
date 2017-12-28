@@ -94,12 +94,10 @@ function SEARCH() {
 			for ( var i = 0; i < RSS_URLS.length; ++i ) {
 				console.log( "\nBatch [ " + ( i + 1 ).toString() + " ] of " + RSS_URLS.length.toString() );
 				var wResults = await map( RSS_URLS[ 0 ] , wURL => FetchXMLFeed( wURL ) );
-				console.log( wResults );
 				wResults = wResults.map( x => PARSE_XML_RESULTS( x ) );
 				wResults = [].concat.apply( [] , wResults );
 				wFinalResults = [].concat.apply( [] , wResults );
 			}
-			console.log( wFinalResults );
 
 			// 2.) Gather 'Meta' info for each Matched Item
 			var wMetaURLS = wResults.map( x => x[ "mainURL" ] );
