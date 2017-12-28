@@ -119,7 +119,7 @@ function searchPubMedPreviousDay( wSearchTerms ) {
 
 	var previous = new Date();
 	previous.setDate( previous.getDate() - 30 ); // Search Previous 30 Days
-	const wYY = today.getFullYear().toString();
+	const wYY = previous.getFullYear().toString();
 	const wYM = ( previous.getMonth() + 1 );
 	const wYD = previous.getDate();
 

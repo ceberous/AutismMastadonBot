@@ -30,6 +30,8 @@ module.exports.scan = function() {
 			try{ await require( "../SCANNERS/osfIO.js" ).search(); }
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/jamanetwork.js" ).search(); }
+			catch( e ) { console.log( e ); }
+			try{ await require( "../SCANNERS/aaiddjournals.js" ).search(); }
 			catch( e ) { console.log( e ); }			
 			console.log( "HOURLY SCAN FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();		
