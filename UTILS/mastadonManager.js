@@ -7,12 +7,12 @@ var wMastadonClient = null;
 process.on( "unhandledRejection" , function( reason , p ) {
 	console.error( reason, "Unhandled Rejection at Promise" , p );
 	console.trace();
-	slackClient.post( reason.toString() , "#amb-err" );
+	POST_SLACK_ERROR( reason );
 });
 process.on( "uncaughtException" , function( err ) {
 	console.error( err , "Uncaught Exception thrown" );
 	console.trace();
-	slackClient.post( err.toString() , "#amb-err" );
+	POST_SLACK_ERROR( err );
 });
 
 // function fetchHomeTimeline() {
@@ -23,6 +23,21 @@ process.on( "uncaughtException" , function( err ) {
 // 		catch( error ) { console.log( error ); reject( error ); }
 // 	});
 // }
+
+function POST_SLACK_ERROR( wStatus ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			if ( typeof wStatus !== "string" ) {
+				try { wStatus = wStatus.toString(); }
+				catch( e ) { wStatus = e; }
+			}
+			slackClient.post( wStatus , "#amb-err" );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.postErrorToSlack = POST_SLACK_ERROR;
 
 function POST_STATUS( wStatus ) {
 	return new Promise( async function( resolve , reject ) {
