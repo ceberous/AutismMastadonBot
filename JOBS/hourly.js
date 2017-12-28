@@ -4,35 +4,35 @@ module.exports.scan = function() {
 			console.log( "HOURLY SCAN STARTED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();
 			try{ await require( "../SCANNERS/pubmed.js" ).search( [ "autism" , "autistic" ] ); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/subreddit.js" ).search( [ "science" , "new" , [ "autis" ] ] ); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/subreddit.js" ).search( [ "science" , "top" , [ "autis" ] ] ); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/nature.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/mdpi.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/wiley.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/oup.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/spectrumNews.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/springer.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/karger.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/frontiersin.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/biorxiv.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/osfIO.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/jamanetwork.js" ).search(); }
-			catch( e ) { console.log( e ); }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/aaiddjournals.js" ).search(); }
-			catch( e ) { console.log( e ); }			
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			console.log( "HOURLY SCAN FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();		
 			resolve();

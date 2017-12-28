@@ -37,7 +37,7 @@ function POST_SLACK_ERROR( wStatus ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-module.exports.postErrorToSlack = POST_SLACK_ERROR;
+module.exports.postSlackError = POST_SLACK_ERROR;
 
 function POST_STATUS( wStatus ) {
 	return new Promise( async function( resolve , reject ) {

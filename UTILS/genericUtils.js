@@ -85,7 +85,7 @@ function TRY_XML_FEED_REQUEST( wURL ) {
 
 			var wResults = [];
 			var feedparser = new FeedParser( [{ "normalize": true , "feedurl": wURL }] );
-			feedparser.on( "error" , function( error ) { console.log( error ); reject( error ); } );
+			feedparser.on( "error" , function( error ) { console.log( error ); resolve("null"); } );
 			feedparser.on( "readable" , function () {
 				var stream = this; 
 				var item;
@@ -97,7 +97,7 @@ function TRY_XML_FEED_REQUEST( wURL ) {
 			});
 
 			var wReq = request( wURL );
-			wReq.on( "error" , function( error ) { console.log( error ); resolve( error ); });
+			wReq.on( "error" , function( error ) { console.log( error ); resolve( "null" ); });
 			wReq.on( "response" , function( res ){
 				var stream = this;
 				if ( res.statusCode !== 200) { console.log( "bad status code" ); resolve("null"); return; }
@@ -105,7 +105,7 @@ function TRY_XML_FEED_REQUEST( wURL ) {
 			});
 
 		}
-		catch( error ) { console.log( error ); reject( error ); }
+		catch( error ) { console.log( error ); resolve("null"); }
 	});
 }
 const FeedParser = require( "feedparser" );
@@ -125,14 +125,15 @@ function FETCH_XML_FEED( wURL ) {
 				if ( wResults !== "null" ) { SUCCESS = true; }
 				else { 
 					console.log( "retrying again" );
+					console.log( wURL );
 					RETRY_COUNT = RETRY_COUNT - 1;
-					await wSleep( 2000 );
+					await W_SLEEP( 2000 );
 				}
 			}
 			resolve( wResults );
 
 		}
-		catch( error ) { console.log( error ); reject( error ); }
+		catch( error ) { console.log( error ); resolve("null"); }
 	});
 }
 module.exports.fetchXMLFeed = FETCH_XML_FEED;

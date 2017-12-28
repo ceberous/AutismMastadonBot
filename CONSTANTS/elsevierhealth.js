@@ -2,7 +2,7 @@ const RSS_URLS = [
 	[
 		"http://www.agajournals.org/current.rss" ,
 		"http://www.awhonnjournals.org/current.rss" ,
-		"http://www.aornjournal.org/current.rss" ,
+		//"http://www.aornjournal.org/current.rss" ,
 		"http://www.academicpedsjnl.net/current.rss" ,
 		"http://www.academicradiology.org/current.rss" ,
 		"http://www.e-aat.com/current.rss" ,

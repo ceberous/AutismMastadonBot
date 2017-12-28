@@ -67,7 +67,6 @@ function PARSE_XML_RESULTS( wResults ) {
 function SEARCH_SINGLE_ELSEVIER_ARTICLE( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			
 			var wBody = await MakeRequest( wURL );
 			try { var $ = cheerio.load( wBody ); }
 			catch( err ) { resolve( "fail" ); return; }
@@ -75,6 +74,7 @@ function SEARCH_SINGLE_ELSEVIER_ARTICLE( wURL ) {
 			var wDOI = $( ".doi" ).children( "a" );
 			wDOI = $( wDOI ).attr( "href" );
 			wDOI = wDOI.split( "/doi.org/" )[1];
+
 			resolve( wDOI );
 		}
 		catch( error ) { console.log( error ); resolve( "fail" ); }
@@ -94,6 +94,7 @@ function SEARCH() {
 			for ( var i = 0; i < RSS_URLS.length; ++i ) {
 				console.log( "\nBatch [ " + ( i + 1 ).toString() + " ] of " + RSS_URLS.length.toString() );
 				var wResults = await map( RSS_URLS[ 0 ] , wURL => FetchXMLFeed( wURL ) );
+				console.log( wResults );
 				wResults = wResults.map( x => PARSE_XML_RESULTS( x ) );
 				wResults = [].concat.apply( [] , wResults );
 				wFinalResults = [].concat.apply( [] , wResults );
