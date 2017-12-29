@@ -9,12 +9,12 @@ function INITIALIZE() {
 				host: "localhost" ,
 				
 				// Production
-				// port: "6379" ,
-				// db: "6" ,
+				port: "6379" ,
+				db: "6" ,
 
 				//Local-Testing
-				port: "8443" ,
-				db: "8" ,
+				// port: "8443" ,
+				// db: "8" ,
 
 				retry_strategy: function ( options ) {
 			        if (options.error && options.error.code === 'ECONNREFUSED') {
