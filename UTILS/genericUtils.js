@@ -30,7 +30,7 @@ module.exports.decodeBase64 = function( wString ) {
 
 
 const request = require( "request" );
-function MAKE_REQUEST( wURL ) {
+function MAKE_REQUEST_WITH_RETRY( wURL , wRetryAttempts ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			var finalBody = null;
@@ -56,14 +56,14 @@ function MAKE_REQUEST( wURL ) {
 				});
 			}
 
-			var wRetry_Count = 3;
+			wRetryAttempts = wRetryAttempts || 1;
 			var wSuccess = false;
 			while( !wSuccess ) {
-				if ( wRetry_Count < 0 ) { wSuccess = true; }
+				if ( wRetryAttempts <= 0 ) { wSuccess = true; }
 				var xSuccess = await _m_request();
 				if ( xSuccess !== "error" ) { wSuccess = true; }
 				else {
-					wRetry_Count = wRetry_Count - 1;
+					wRetryAttempts = wRetryAttempts - 1;
 					await W_SLEEP( 2000 );
 					console.log( "retrying" );
 				}
@@ -73,8 +73,29 @@ function MAKE_REQUEST( wURL ) {
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
-module.exports.makeRequest = MAKE_REQUEST;
+module.exports.makeRequestWithRetry = MAKE_REQUEST_WITH_RETRY;
 
+function MAKE_REQUEST( wURL ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			request( wURL , async function ( err , response , body ) {
+				if ( err ) { resolve("error"); return; }
+				console.log( wURL + "\n\t--> RESPONSE_CODE = " + response.statusCode.toString() );
+				if ( response.statusCode !== 200 ) {
+					//console.log( "bad status code ... " );
+					resolve( "error" );
+					return;
+				}
+				else {
+					resolve( body );
+					return;
+				}
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.makeRequest = MAKE_REQUEST;
 
 
 function TRY_XML_FEED_REQUEST( wURL ) {
@@ -144,9 +165,16 @@ function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
+			// Sanitize
 			if ( !wCommonResults ) { resolve( [] ); return; }
 			if ( wCommonResults.length < 1 ) { resolve( [] ); return; }
 			console.log( wCommonResults );
+			for ( var i = 0; i < wCommonResults.length; ++i ) {
+				if ( !wCommonResults[ i ][ "doiB64" ] ) { wCommonResults.slice( i , 1 ); continue; }
+				if ( wCommonResults[ i ][ "doiB64" ].length < 7 ) { wCommonResults.slice( i , 1 ); continue; }
+			}
+			console.log( wCommonResults );
+
 
 			// 1.) Generate Random-Temp Key
 			var wTempKey = Math.random().toString(36).substring(7);
@@ -179,7 +207,7 @@ function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 				resolve( [] );
 				return;
 			}
-			console.log( "are we here ??" );
+			//console.log( "are we here ??" );
 			// 4.) Filter Out Results to Return 'New-Valid' Tweets
 			wCommonResults = wCommonResults.filter( x => wNewTracking.indexOf( x[ "doiB64" ] ) !== -1 );
 			await RU.delKey( redis , R_NEW_TRACKING );

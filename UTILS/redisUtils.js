@@ -1,3 +1,27 @@
+function SET_KEY( rInstance , wKey , wItem ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.set( wKey , wItem , function( err , keys ) { resolve( keys ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.setKey = SET_KEY;
+
+function SET_ADD( rInstance , wKey , wItem ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.sadd( wKey , wItem , function( err , keys ) { resolve( keys ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.setAdd = SET_ADD;
+
+function HASH_SET( rInstance , wHashKey , wKey , wItem ) {
+	return new Promise( function( resolve , reject ) {
+		try { rInstance.hset( wHashKey , wKey , wItem , function( err , keys ) { resolve( keys ); }); }
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.hashSet = HASH_SET;
+
 function SET_SET_FROM_ARRAY( rInstance , wKey , wArray ) {
 	return new Promise( function( resolve , reject ) {
 		try { rInstance.sadd.apply( rInstance , [ wKey ].concat( wArray ).concat( function( err , keys ){ resolve( keys ); })); }
