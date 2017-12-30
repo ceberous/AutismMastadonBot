@@ -8,7 +8,7 @@ function INITIALIZE() {
 			redis = await REDIS.createClient({ 
 				host: "localhost" ,
 				
-				// Production
+				// Production //
 				port: "6379" ,
 				db: "6" ,
 
