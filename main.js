@@ -21,4 +21,6 @@ var JOB_IDS = [];
 		pid: schedule.scheduleJob( "1 1-23 * * *" , ()=> { require( "./JOBS/hourly.js" ).scan(); } )
 	});
 
+	require( "./JOBS/hourly.js" ).scan();
+
 })();
