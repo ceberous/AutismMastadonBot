@@ -168,7 +168,6 @@ function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 			// Sanitize
 			if ( !wCommonResults ) { resolve( [] ); return; }
 			if ( wCommonResults.length < 1 ) { resolve( [] ); return; }
-			console.log( wCommonResults );
 			for ( var i = 0; i < wCommonResults.length; ++i ) {
 				if ( !wCommonResults[ i ][ "doiB64" ] ) { wCommonResults.slice( i , 1 ); continue; }
 				if ( wCommonResults[ i ][ "doiB64" ].length < 7 ) { wCommonResults.slice( i , 1 ); continue; }

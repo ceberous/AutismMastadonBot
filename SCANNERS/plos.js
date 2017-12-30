@@ -146,7 +146,7 @@ function FILTER_ALREADY_TRACKED_PLOS_ARTICLE_IDS( wResults ) {
 			wResults = wResults.filter( x => wNewTracking.indexOf( x[ "doiB64" ] ) !== -1 );
 			await RU.delKey( redis , R_NEW_TRACKING );
 			const wFinal_Length = wResults.length;
-			console.log( "Filtered - " + ( wFinal_Length - wInitial_Length ).toString() + " Results" );
+			console.log( "Filtered - " + ( wInitial_Length - wFinal_Length ).toString() + " Results" );
 			resolve( wResults );
 		}
 		catch( error ) { console.log( error ); reject( error ); }

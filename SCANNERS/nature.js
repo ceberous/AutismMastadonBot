@@ -19,7 +19,7 @@ function PARSE_PUPPETEER(){
 		try {
 
 			try { var $ = cheerio.load( wResults ); }
-			catch(err) { reject( "cheerio load failed" ); return; }
+			catch( err ) { reject( "cheerio load failed" ); return; }
 
 			var wTitles = [];
 			var wDOIS = [];
@@ -27,14 +27,17 @@ function PARSE_PUPPETEER(){
 			$( "strong" ).each( function () {
 				var wThis = $( this );
 				var wID = wThis.text().trim();
+				//console.log( wID );
 				if ( wID === "dc:title" ) {
 					var wTextNode = wThis.parent().siblings()[0];
 					wTextNode = $( wTextNode ).text();
+					//console.log( wTextNode );
 					wTitles.push( wTextNode );
 				}
 				else if ( wID === "prism:doi" ) {
 					var wTextNode = wThis.parent().siblings()[0];
 					wTextNode = $( wTextNode ).text();
+					//console.log( wTextNode );
 					wDOIS.push( wTextNode );
 				}
 			});
@@ -99,7 +102,9 @@ function FETCH_PUPPETEER(){
 
 			const browser = await puppeteer.launch();
 			const page = await browser.newPage();
-			await page.goto( wFinalURL , { waitUntil: "networkidle2" });
+			await page.setViewport( { width: 1200 , height: 700 } );
+			await page.goto( wFinalURL , { waitUntil: "networkidle0" });
+			await page.waitFor( 3000 );
 			wResults = await page.content();
 			await browser.close();
 			await PARSE_PUPPETEER();
@@ -121,7 +126,6 @@ function SEARCH_TODAY( wOptions ) {
 
 			// 1.) Fetch New Search Results
 			await FETCH_PUPPETEER();
-			console.log( wFinalResults );
 
 			// 2.) Filter
 			wFinalResults = await FilterUNEQResultsREDIS( wFinalResults );
