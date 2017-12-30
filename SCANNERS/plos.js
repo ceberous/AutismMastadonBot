@@ -1,5 +1,6 @@
 const cheerio = require( "cheerio" );
 const { map } = require( "p-iteration" );
+const pALL = require( "p-all" );
 
 const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const PostResults = require( "../UTILS/mastadonManager.js" ).formatPapersAndPost;
@@ -7,6 +8,8 @@ const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 const wSleep = require( "../UTILS/genericUtils.js" ).wSleep;
+const redis = require( "../UTILS/redisManager.js" ).redisClient;
+const RU = require( "../UTILS/redisUtils.js" );
 
 const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
 const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
@@ -48,7 +51,6 @@ function SEARCH_INDIVIDUAL_PLOS_ARTICLE( wURL ) {
 			var wBody = await MakeRequest( wURL );
 			try { var $ = cheerio.load( wBody ); }
 			catch(err) { reject( "cheerio load failed" ); return; }
-
 			var wTitle = $( "#artTitle" ).text();
 			var wTitle_Found = false;
 			if ( wTitle ) { 
@@ -58,6 +60,11 @@ function SEARCH_INDIVIDUAL_PLOS_ARTICLE( wURL ) {
 			var wAbstract_Found = false;
 			var wAbstract_Text = $( ".abstract.toc-section" );
 			wAbstract_Text = $( wAbstract_Text[0] ).text();
+
+			var xb64 = wURL.split( "id=" )[1];
+			xb64 = EncodeB64( xb64 );
+			await RU.setAdd( redis , R_PLOS_ARTICLES , xb64 );
+
 			if ( wAbstract_Text ) {
 				wAbstract_Text = wAbstract_Text.trim();
 				wAbstract_Found = scanText( wAbstract_Text );
@@ -90,11 +97,69 @@ function GET_MONTHS_RESULTS( wURL ) {
 				var wLink = $( wA_Tag ).attr( "href" );
 				finalResults.push({
 					doi: wDOI ,
+					doiB64: EncodeB64( wDOI ) ,
 					link: BASE_URL_P + wLink
 				});
 			});
 
 			resolve( finalResults );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+const R_PLOS_ARTICLES = "SCANNERS_PLOS.ALREADY_TRACKED";
+function FILTER_ALREADY_TRACKED_PLOS_ARTICLE_IDS( wResults ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			const wInitial_Length = wResults.length;
+			var wArticleIDS_B64 = wResults.map( x => x[ "doiB64" ] );
+			//console.log( wArticleIDS_B64 );
+
+			// 1.) Generate Random-Temp Key
+			var wTempKey = Math.random().toString(36).substring(7);
+			var R_PLACEHOLDER = "SCANNERS." + wTempKey + ".PLACEHOLDER";
+			var R_NEW_TRACKING = "SCANNERS." + wTempKey + ".NEW_TRACKING";
+
+			await RU.setSetFromArray( redis , R_PLACEHOLDER , wArticleIDS_B64 );
+			await RU.setDifferenceStore( redis , R_NEW_TRACKING , R_PLACEHOLDER , R_PLOS_ARTICLES );
+			await RU.delKey( redis , R_PLACEHOLDER );
+			//await RU.setSetFromArray( redis , R_PLOS_ARTICLES , wArticleIDS_B64 );
+
+			const wNewTracking = await RU.getFullSet( redis , R_NEW_TRACKING );
+			//console.log( wNewTracking );
+			if ( !wNewTracking ) { 
+				await RU.delKey( redis , R_NEW_TRACKING ); 
+				console.log( "nothing new found - Filtered - " + wInitial_Length.toString() ); 
+				PrintNowTime(); 
+				resolve( [] );
+				return;
+			}
+			if ( wNewTracking.length < 1 ) {
+				await RU.delKey( redis , R_NEW_TRACKING );
+				console.log( "nothing new found - Filtered - " + wInitial_Length.toString() );
+				PrintNowTime();
+				resolve( [] );
+				return;
+			}
+			
+			wResults = wResults.filter( x => wNewTracking.indexOf( x[ "doiB64" ] ) !== -1 );
+			await RU.delKey( redis , R_NEW_TRACKING );
+			const wFinal_Length = wResults.length;
+			console.log( "Filtered - " + ( wFinal_Length - wInitial_Length ).toString() + " Results" );
+			resolve( wResults );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function PROMISE_ALL_ARTICLE_META_SEARCH( wResults ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			var wActions = wResults.map( x => async () => { var x1 = await SEARCH_INDIVIDUAL_PLOS_ARTICLE( x ); return x1; } );
+			pALL( wActions , { concurrency: 5 } ).then( result => {
+				resolve( result );
+			});
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -115,29 +180,37 @@ function SEARCH( wJournals ) {
 			wResults = [].concat.apply( [] , wResults );
 			//console.log( wResults );
 
-			// 2.) Enumerate Results , searching for "autism"
+			// 2.) Check Against Already 'Tracked' PLOS-Article-IDS
+			wResults = await FILTER_ALREADY_TRACKED_PLOS_ARTICLE_IDS( wResults );
+			if ( wResults.length < 1 ) { console.log( "\nPlos.org Scan Finished" ); PrintNowTime(); resolve(); return; }
+
+			// 3.) Enumerate Results , searching for "autism"
 			var wLinks = wResults.map( x => x["link"] );
 			console.log("");
 			console.log( "\nSearching --> " + wLinks.length.toString() + " Articles" );
-			var wDetails = await map( wLinks , wLink => SEARCH_INDIVIDUAL_PLOS_ARTICLE( wLink ) );
+			//var wDetails = await map( wLinks , wLink => SEARCH_INDIVIDUAL_PLOS_ARTICLE( wLink ) );
+			var wDetails = await PROMISE_ALL_ARTICLE_META_SEARCH( wLinks );
 			var wFinal_Found_Results = [];
 			for ( var i = 0; i < wResults.length; ++i ) {
 				if ( wDetails[ i ] !== undefined ) {
 					wFinal_Found_Results.push({
 						title: wDetails[ i ] ,
 						doi: wResults[ i ][ "doi" ] ,
-						doiB64: EncodeB64( wResults[ i ][ "doi" ] ) ,
+						doiB64: EncodeB64( wResults[ i ][ "doiB64" ] ) ,
 						mainURL: wResults[ i ][ "link" ] ,
 						scihubURL: SCI_HUB_BASE_URL + wResults[ i ][ "doi" ]
 					});
 				}
 			}
+			// 4.) Cache Already Searched Results , so we don't have to search again
+			var wFinal_PLOS_DOI_B64S = wResults.map( x => x[ "doiB64" ] );
+			await RU.setSetFromArray( redis , R_PLOS_ARTICLES , wFinal_PLOS_DOI_B64S );
 			//console.log( wFinal_Found_Results );
 
-			// 3.) Compare to Already 'Tracked' DOIs and Store Uneq
+			// 5.) Compare to Already 'Tracked' DOIs and Store Uneq
 			wFinal_Found_Results = await FilterUNEQResultsREDIS( wFinal_Found_Results );
 
-			// 4.) Post Results
+			// 6.) Post Results
 			await PostResults( wFinal_Found_Results );
 
 			console.log( "" );

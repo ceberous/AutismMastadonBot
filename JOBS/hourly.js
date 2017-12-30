@@ -34,6 +34,8 @@ module.exports.scan = function() {
 			try{ await require( "../SCANNERS/aaiddjournals.js" ).search(); }
 			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
 			try{ await require( "../SCANNERS/scienceDirect.js" ).search();  }
+			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }
+			try{ await require( "../SCANNERS/plos.js" ).search();  }
 			catch( e ) { console.log( e ); require( "../UTILS/mastadonManager.js" ).postSlackError( e ); }			
 			console.log( "HOURLY SCAN FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();		

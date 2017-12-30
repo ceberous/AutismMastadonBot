@@ -18,12 +18,63 @@ const wSleep = require( "../UTILS/genericUtils.js" ).wSleep;
 const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
 const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
+function TRY_CUSTOM_CHEERIO_STRATEGY( wBody ) {
+	try { var $ = cheerio.load( wBody ); }
+	catch( err ) { return( "fail" ); }
+	var wDOI = $( ".DoiLink" );
+	wDOI = $( wDOI ).children();
+	wDOI = $( wDOI[ 0 ] ).attr( "href" );
+	if ( wDOI === undefined ) {
+		//console.log( "Stage = A" );
+		wDOI = $( 'a[id="ddDoi"]' ).attr( "href" );
+	}
+	// B.)
+	if ( wDOI === undefined ) {
+		//console.log( "Stage = B" );
+		wDOI = $( ".doi" ).find( "a" );
+		if ( wDOI ) { wDOI = $( wDOI[ 0 ] ).attr( "href" ) };
+	}
+	// C.)
+	if ( wDOI === undefined ) {
+		//console.log( "Stage = C" );
+		wDOI = $( 'a[class="S_C_ddDoi"]' ).attr( "href" );
+	}
+	// D.)
+	if ( wDOI === undefined ) {
+		//console.log( "Stage = D" );
+		var wHTML_Text = $( "body" ).html().toString();
+		if ( wHTML_Text ) {
+			wHTML_Text = wHTML_Text.split( "\n" );
+			for ( var i = 0; i < wHTML_Text.length; ++i ) {
+				//console.log( ( i ).toString() + " .) = " + wHTML_Text[ i ] );
+				const x1 = wHTML_Text[ i ].substring( 0 , 7 );
+				//console.log( ( i ).toString() + " .) = " + x1 );
+				if ( x1 === "SDM.doi" ) {
+					var x2 = wHTML_Text[ i ].split( " " );
+					x2 = x2[ ( x2.length - 1 ) ];
+					x2 = x2.split( "'" );
+					x2 = x2[ 1 ];
+					wDOI = x2;
+					if ( wDOI === "1" || wDOI === 1 ) { console.log( "\nREJECTION -- \n" +  wHTML_Text[ i ] ); wDOI = "fail"; }
+				}
+			}
+		}
+	}
+	if ( wDOI === undefined ) { wDOI = "fail"; }
+	else {
+		if ( wDOI.indexOf( "doi.org" ) !== -1 ) {
+			try { wDOI = wDOI.split( "doi.org/" )[ 1 ]; }
+			catch( e ) { wDOI = "fail"; }
+		}
+	}
+	return wDOI;
+}
+
 var browser = null;
 function SEARCH_SINGLE_SCIENCE_DIRECT_ARTICLE_PUPPETEER( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			console.log( wURL );
-			//const browser = await puppeteer.launch();
 			const page = await browser.newPage();
 			await page.setViewport( { width: 1200 , height: 700 } );
 			//await page.setJavaScriptEnabled( false );
@@ -36,58 +87,10 @@ function SEARCH_SINGLE_SCIENCE_DIRECT_ARTICLE_PUPPETEER( wURL ) {
 					else { return Promise.resolve( undefined ); }
 				}
 			});
-			console.log( xPageDOI );
-			//await page.waitForNavigation();
-			var wBody = await page.content();
-			//await browser.close();
-			if ( xPageDOI !== undefined ) { resolve( xPageDOI ); return; }
-			try { var $ = cheerio.load( wBody ); }
-			catch( err ) { resolve( "fail" ); return; }
-
-			var wDOI = $( ".DoiLink" );
-			wDOI = $( wDOI ).children();
-			wDOI = $( wDOI[ 0 ] ).attr( "href" );
-			if ( wDOI === undefined ) {
-				wDOI = $( 'a[id="ddDoi"]' ).attr( "href" );
-			}
-			if ( wDOI === undefined ) {
-				wDOI = $( ".doiLink" ).find( "a" );
-				if ( wDOI ) { wDOI = $( wDOI[ 0 ] ).attr( "href" ); }
-			}
-			try { wDOI = wDOI.split( "https://doi.org/" )[1]; }
-			catch( e ) {
-				wDOI = $( 'input[name="doi"]' ).attr( "value" );
-				if ( wDOI === undefined ) { wDOI = $( 'a[class="S_C_ddDoi"]' ).attr( "href" ); }
-				if ( wDOI === undefined ) {
-					var wHTML_Text = $( "body" ).html().toString();
-					if ( wHTML_Text ) {
-						wHTML_Text = wHTML_Text.split( "\n" );
-						for ( var i = 0; i < wHTML_Text.length; ++i ) {
-							//console.log( ( i ).toString() + " .) = " + wHTML_Text[ i ] );
-							const x1 = wHTML_Text[ i ].substring( 0 , 7 );
-							//console.log( ( i ).toString() + " .) = " + x1 );
-							if ( x1 === "SDM.doi" ) {
-								var x2 = wHTML_Text[ i ].split( " " );
-								x2 = x2[ ( x2.length - 1 ) ];
-								x2 = x2.split( "'" );
-								x2 = x2[ 1 ];
-								wDOI = x2;
-								if ( wDOI === "1" || wDOI === 1 ) { console.log( "\nREJECTION -- \n" +  wHTML_Text[ i ] ); }
-							}
-						}
-						if ( wDOI === undefined ) {
-							console.log( "still failed\t" + wURL );
-							resolve( "fail" );
-							return;
-						}
-					}
-				}
-				else {
-					try { wDOI = wDOI.split( "https://doi.org/" )[1]; }
-					catch( e ) { resolve( "fail" ); return; }
-				}				
-			}
+			if ( xPageDOI !== undefined ) { console.log( "\t--> " + xPageDOI ); resolve( xPageDOI ); return; }
 			
+			var wBody = await page.content();
+			var wDOI = TRY_CUSTOM_CHEERIO_STRATEGY( wBody );
 			console.log( "\t--> " + wDOI );
 			resolve( wDOI );
 		}
@@ -99,65 +102,14 @@ function SEARCH_SINGLE_SCIENCE_DIRECT_ARTICLE_PUPPETEER( wURL ) {
 function SEARCH_SINGLE_SCIENCE_DIRECT_ARTICLE_BASIC( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
+			// 1.) Grab Body
 			var wBody = await MakeRequest( wURL );
-			try { var $ = cheerio.load( wBody ); }
-			catch( err ) { resolve( "fail" );; return; }
-
-			var wDOI = $( ".DoiLink" );
-			wDOI = $( wDOI ).children();
-			wDOI = $( wDOI[ 0 ] ).attr( "href" );
-			if ( wDOI === undefined ) {
-				wDOI = $( 'a[id="ddDoi"]' ).attr( "href" );
-			}
-			try { wDOI = wDOI.split( "https://doi.org/" )[1]; }
-			catch( e ) {
-				wDOI = $( 'input[name="doi"]' ).attr( "value" );
-				if ( wDOI === undefined ) { wDOI = $( 'a[class="S_C_ddDoi"]' ).attr( "href" ); }
-				if ( wDOI === undefined ) {
-					var wHTML_Text = $( "body" ).html().toString();
-					if ( wHTML_Text ) {
-						wHTML_Text = wHTML_Text.split( "\n" );
-						for ( var i = 0; i < wHTML_Text.length; ++i ) {
-							//console.log( ( i ).toString() + " .) = " + wHTML_Text[ i ] );
-							const x1 = wHTML_Text[ i ].substring( 0 , 7 );
-							//console.log( ( i ).toString() + " .) = " + x1 );
-							if ( x1 === "SDM.doi" ) {
-								var x2 = wHTML_Text[ i ].split( " " );
-								x2 = x2[ ( x2.length - 1 ) ];
-								x2 = x2.split( "'" );
-								x2 = x2[ 1 ];
-								wDOI = x2;
-								if ( wDOI === "1" || wDOI === 1 ) { console.log( "\nREJECTION -- \n" +  wHTML_Text[ i ] ); }
-							}
-						}
-						if ( wDOI === undefined ) {
-							console.log( "still failed\t" + wURL );
-							// for ( var i = 0; i < wHTML_Text.length; ++i ) {
-							// 	console.log( ( i ).toString() + " .) = " + wHTML_Text[ i ] );
-							// 	//const x1 = wHTML_Text[ i ].substring( 0 , 7 );
-							// 	//console.log( ( i ).toString() + " .) = " + x1 );
-							// 	// if ( x1 === "SDM.doi" ) {
-							// 	// 	var x2 = wHTML_Text[ i ].split( " " );
-							// 	// 	x2 = x2[ ( x2.length - 1 ) ];
-							// 	// 	x2 = x2.split( "'" );
-							// 	// 	x2 = x2[ 1 ];
-							// 	// 	wDOI = x2;
-							// 	// }
-							// }					
-							//process.exit(1); 
-							//await wSleep( 3000 );
-							resolve( "fail" );
-							return;
-						}
-					}				
-				}
-				else {
-					try { wDOI = wDOI.split( "https://doi.org/" )[1]; }
-					catch( e ) { resolve( "fail" ); return; }
-				}
-			}
+			if ( !wBody ) { console.log( "\t--> HTTP fail" ); resolve( "fail" ); retun; }
 			
+			// 2.) Try Various Methods of 'Finding' the DOI
+			var wDOI = TRY_CUSTOM_CHEERIO_STRATEGY( wBody );
 			console.log( "\t--> " + wDOI );
+			
 			resolve( wDOI );
 		}
 		catch( error ) { console.log( error ); resolve( "fail" ); }
@@ -296,10 +248,10 @@ function SEARCH() {
 
 			// 3. ) Otherwise , Gather 'Meta' info for each Search 'Hit'
 			wResults = await RUN_CUSTOM_META_SEARCH( wResults );
-			// Rerun Failed Results again Just in Case
 			var wFailed = wResults.filter( x => x[ "doi" ] === "fail" );
 			wResults = wResults.filter( x => x[ "doi" ] !== "fail" );
 			/*
+			// Rerun Failed Results again Just in Case
 			if ( wFailed.length > 0 ) {
 				var wFailed2 = await RUN_CUSTOM_META_SEARCH( wFailed );
 				wFailed2 = wFailed2.filter( x => x[ "doi" ] === "fail" );
@@ -308,6 +260,7 @@ function SEARCH() {
 				console.log( wResults );
 			}
 			*/
+			
 			//4.) If there are still failures , try with puppeteer
 			for ( var i = 0; i < wFailed.length; ++i ) {
 				await wSleep( 1000 );
@@ -322,12 +275,9 @@ function SEARCH() {
 						wFailed[ i ][ "scihubURL" ] = SCI_HUB_BASE_URL + wDOI
 					}
 				}
-				//await wSleep( 1000 );
 			}
 			var wNewResults = wFailed.filter( x => x[ "doi" ] !== "fail" );
 			for ( var i = 0; i < wNewResults.length; ++i ) { wResults.push( wNewResults[ i ] ); }
-
-
 
 			// 5. ) Store List of Already 'Tracked' SD Articles Into Redis
 			const wFinalSDA_IDS = wResults.map( x => x[ "sdAID" ] );
