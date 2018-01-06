@@ -105,16 +105,18 @@ function SEARCH() {
 			wResults = [].concat.apply( [] , wResults );
 			wResults = wResults.map( x => PARSE_XML_RESULTS( x ) );
 			wResults = wResults.filter( x => x !== undefined );
+			var xTesting_DOIS = wResults.map( x => x[ "doi" ] );
 
 			// 2.) Fetch Advanced Search Results
 			var wAdvanced_Search_Body = await MakeRequest( BIORXIV_ADVANCED_SEARCH_URL );
 			var wAdvanced_Search_Results = PARSE_SEARCH_RESULTS( wAdvanced_Search_Body );
-			console.log( wAdvanced_Search_Results );
 
 			// 3.) Combine Results
 			var wAdvanced_Search_Results_DOIS = wAdvanced_Search_Results.map( x => x[ "doi" ] );
 			wResults = wResults.filter( x => wAdvanced_Search_Results_DOIS.indexOf( x[ "doi" ] ) !== -1 );
-			wAdvanced_Search_Results = [].concat.apply( [] , wResults );
+			for ( var i = 0; i < wResults.length; ++i ) {
+				wAdvanced_Search_Results.push( wResults[ i ] );
+			}
 
 			// 4.) Filter Uneq
 			wAdvanced_Search_Results = await FilterUNEQResultsREDIS( wAdvanced_Search_Results );

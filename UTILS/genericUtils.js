@@ -164,7 +164,6 @@ const R_GLOBAL_ALREADY_TRACKED_DOIS = "SCANNERS.GLOBAL.ALREADY_TRACKED.DOIS";
 function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-
 			// Sanitize
 			if ( !wCommonResults ) { resolve( [] ); return; }
 			if ( wCommonResults.length < 1 ) { resolve( [] ); return; }
@@ -173,7 +172,6 @@ function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 				if ( wCommonResults[ i ][ "doiB64" ].length < 7 ) { wCommonResults.slice( i , 1 ); continue; }
 			}
 			console.log( wCommonResults );
-
 
 			// 1.) Generate Random-Temp Key
 			var wTempKey = Math.random().toString(36).substring(7);
