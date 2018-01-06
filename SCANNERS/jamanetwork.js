@@ -73,7 +73,7 @@ function generateSearchURL() {
 
 	var previous = new Date();
 	previous.setDate( previous.getDate() - 30 ); // Search Previous 30 Days
-	const wPY = today.getFullYear().toString();
+	const wPY = previous.getFullYear().toString();
 	const wPM = ( previous.getMonth() + 1 );
 	const wPD = previous.getDate();
 

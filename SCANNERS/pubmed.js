@@ -55,23 +55,22 @@ function getDOICheerio( wPubMedID , wDOIOnly ) {
 					}
 				});
 			}
-			if ( wDOI === null ) {
-				console.log( $( "body" ).html() );
-			}
+
 			console.log( "\t\t--> " + wDOI );
 			if ( wDOIOnly ) { resolve( wDOI ); return; }
 
 			wOBJ1.pmid = wPubMedID;
 			wOBJ1.mainURL = NCBI_NIH_ARTICLE_BASE_URL + wPubMedID;
 			if ( wDOI ) {
-				if ( wDOI.length > 1 ) {
+				if ( wDOI.length > 3 ) {
 					wOBJ1[ "doi" ] = wDOI;
 					wOBJ1[ "doiB64" ] = EncodeB64( wDOI );
-					wOBJ1[ "scihubURL" ] = SCI_HUB_BASE_URL + wDOI;
+					if ( !isNaN( wDOI[ 0 ] ) && !isNaN( wDOI[ 1 ] ) ) {
+						wOBJ1[ "scihubURL" ] = SCI_HUB_BASE_URL + wDOI;
+					}
 				}
 			}
 			resolve( wOBJ1 );
-
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
@@ -146,7 +145,7 @@ function generateSearchURL( wSearchTerms ) {
 	const wTD = today.getDate();
 
 	var previous = new Date();
-	previous.setDate( previous.getDate() - 30 ); // Search Previous 30 Days
+	previous.setDate( previous.getDate() - 60 ); // Search Previous 30 Days
 	const wYY = previous.getFullYear().toString();
 	const wYM = ( previous.getMonth() + 1 );
 	const wYD = previous.getDate();
