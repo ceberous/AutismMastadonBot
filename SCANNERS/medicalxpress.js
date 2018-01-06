@@ -1,6 +1,5 @@
 const puppeteer = require( "puppeteer" );
 const cheerio = require( "cheerio" );
-const { map } = require( "p-iteration" );
 
 const redis = require( "../UTILS/redisManager.js" ).redisClient;
 const RU = require( "../UTILS/redisUtils.js" );

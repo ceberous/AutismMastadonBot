@@ -60,8 +60,8 @@ function ENUMERATE_STATUS_POSTS( wResults ) {
 			if ( !wResults ) { resolve(); return; }
 			if ( wResults.length < 1 ) { resolve(); return; }
 			for ( var i = 0; i < wResults.length; ++i ) {
-				// await POST_STATUS( wResults[ i ] );
-				// await slackClient.post( wResults[ i ] , "#autism" );
+				await POST_STATUS( wResults[ i ] );
+				await slackClient.post( wResults[ i ] , "#autism" );
 			}
 			resolve();
 		}

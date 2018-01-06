@@ -1,8 +1,10 @@
+const cheerio = require( "cheerio" );
 const { map } = require( "p-iteration" );
 
 const PostResults = require( "../UTILS/mastadonManager.js" ).formatPapersAndPost;
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
+const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
@@ -56,6 +58,40 @@ function PARSE_XML_RESULTS( wResults ) {
 	return undefined;
 }
 
+function PARSE_SEARCH_RESULTS( wBody ) {
+	try { var $ = cheerio.load( wBody ); }
+	catch( err ) { return "fail"; }
+	var finalResults = [];
+	var wChild_List = $( ".highwire-search-results-list" ).children();
+	if ( !wChild_List ) { return "fail"; }
+	$( wChild_List ).each( function() {
+		var wThis = $( this ).children();
+		if ( !wThis ) { return false; }
+		var wTitle = $( wThis[ 0 ] ).find( ".highwire-cite-title" );
+		if ( !wTitle ) { return false; }
+		wTitle = $( wTitle[ 0 ] ).text();
+		if ( !wTitle ) { return false; }
+		wTitle = wTitle.trim();
+		var wDOI = $( wThis[ 0 ] ).find( ".highwire-cite-metadata-doi" );
+		if ( !wDOI ) { return false; }
+		wDOI = $( wDOI[ 0 ] ).text();
+		if ( !wDOI ) { return false; }
+		if ( wDOI.indexOf( "/doi.org/" ) === -1 ) { return false; }
+		wDOI = wDOI.split( "/doi.org/" )[1];
+		wDOI = wDOI.split( " " )[0];
+		if ( !wDOI ) { return false; }
+		finalResults.push({
+			title: wTitle ,
+			mainURL: DX_DOI_BASE_URL + "/" + wDOI ,
+			doi: wDOI , 
+			doiB64: EncodeB64( wDOI ) ,
+			scihubURL: SCI_HUB_BASE_URL + wDOI
+		});
+	});
+	return finalResults;
+}
+
+const BIORXIV_ADVANCED_SEARCH_URL = "https://www.biorxiv.org/search/abstract_title%3Aautism%20abstract_title_flags%3Amatch-all%20numresults%3A100%20sort%3Apublication-date%20direction%3Adescending%20format_result%3Astandard";
 function SEARCH() {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -64,17 +100,27 @@ function SEARCH() {
 			console.log( "\nBiorxiv.org Scan Started" );
 			PrintNowTime();
 
-			// 1. ) Fetch Results
+			// 1. ) Fetch XML Results
 			var wResults = await map( BIORXIV_FEED_URLS , wURL => FetchXMLFeed( wURL ) );
 			wResults = [].concat.apply( [] , wResults );
 			wResults = wResults.map( x => PARSE_XML_RESULTS( x ) );
 			wResults = wResults.filter( x => x !== undefined );
 
-			// 2.) Filter Uneq
-			wResults = await FilterUNEQResultsREDIS( wResults );
+			// 2.) Fetch Advanced Search Results
+			var wAdvanced_Search_Body = await MakeRequest( BIORXIV_ADVANCED_SEARCH_URL );
+			var wAdvanced_Search_Results = PARSE_SEARCH_RESULTS( wAdvanced_Search_Body );
+			console.log( wAdvanced_Search_Results );
 
-			// 3.) Post Uneq
-			await PostResults( wResults );
+			// 3.) Combine Results
+			var wAdvanced_Search_Results_DOIS = wAdvanced_Search_Results.map( x => x[ "doi" ] );
+			wResults = wResults.filter( x => wAdvanced_Search_Results_DOIS.indexOf( x[ "doi" ] ) !== -1 );
+			wAdvanced_Search_Results = [].concat.apply( [] , wResults );
+
+			// 4.) Filter Uneq
+			wAdvanced_Search_Results = await FilterUNEQResultsREDIS( wAdvanced_Search_Results );
+
+			// 5.) Post Uneq
+			await PostResults( wAdvanced_Search_Results );
 
 			console.log( "\nBiorxiv.org Scan Finished" );
 			PrintNowTime();
