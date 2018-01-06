@@ -2,6 +2,8 @@ const puppeteer = require( "puppeteer" );
 const cheerio = require( "cheerio" );
 const { map } = require( "p-iteration" );
 
+const redis = require( "../UTILS/redisManager.js" ).redisClient;
+const RU = require( "../UTILS/redisUtils.js" );
 const PostResults = require( "../UTILS/mastadonManager.js" ).formatPapersAndPost;
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
@@ -48,6 +50,46 @@ function SEARCH_INDIVIDUAL_PAGE_FOR_META_DATA( wURL ) {
 	});
 }
 
+const R_MEDICAL_EXPRESS_ARTICLES = "SCANNERS_MEDICAL_EXPRESS.ALREADY_TRACKED";
+function FILTER_ALREADY_TRACKED_MED_EXPRESS_ARTICLES( wResults ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var wArticleIDS = wResults.map( x => EncodeB64( x[ "mainURL" ] ) );
+			//console.log( wArticleIDS );
+
+			// 1.) Generate Random-Temp Key
+			var wTempKey = Math.random().toString(36).substring(7);
+			var R_PLACEHOLDER = "SCANNERS." + wTempKey + ".PLACEHOLDER";
+			var R_NEW_TRACKING = "SCANNERS." + wTempKey + ".NEW_TRACKING";
+
+			await RU.setSetFromArray( redis , R_PLACEHOLDER , wArticleIDS );
+			await RU.setDifferenceStore( redis , R_NEW_TRACKING , R_PLACEHOLDER , R_MEDICAL_EXPRESS_ARTICLES );
+			await RU.delKey( redis , R_PLACEHOLDER );
+			await RU.setSetFromArray( redis , R_MEDICAL_EXPRESS_ARTICLES , wArticleIDS );
+
+			const wNewTracking = await RU.getFullSet( redis , R_NEW_TRACKING );
+			if ( !wNewTracking ) { 
+				await RU.delKey( redis , R_NEW_TRACKING ); 
+				console.log( "nothing new found" ); 
+				PrintNowTime(); 
+				resolve( [] );
+				return;
+			}
+			if ( wNewTracking.length < 1 ) {
+				await RU.delKey( redis , R_NEW_TRACKING );
+				console.log( "nothing new found" ); 
+				PrintNowTime();
+				resolve( [] );
+				return;
+			}
+			wResults = wResults.filter( x => wNewTracking.indexOf( EncodeB64( x[ "mainURL" ] ) ) !== -1 );
+			await RU.delKey( redis , R_NEW_TRACKING );
+			resolve( wResults );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 function PARSE_SEARCH_PAGE( wBody ) {
 	try { var $ = cheerio.load( wBody ); }
 	catch( err ) { return "fail"; }
@@ -86,9 +128,16 @@ function SEARCH() {
 			// 2. ) Parse Search Results
 			var wResults = PARSE_SEARCH_PAGE( wBody );
 
-			// 3.) Gather Meta Data from Each MedicalXPress Article Page
+			// 3.) Filter Already "Searched" Medical Express Articles
+			wResults = await FILTER_ALREADY_TRACKED_MED_EXPRESS_ARTICLES( wResults );
+
+			// 4.) Gather Meta Data from Each MedicalXPress Article Page
 			var wMainURLS = wResults.map( x => x[ "mainURL" ] )
-			var wMetaDetails = await map( wMainURLS , wURL => SEARCH_INDIVIDUAL_PAGE_FOR_META_DATA( wURL ) );
+			var wMetaDetails = [];
+			for ( var i = 0; i < wResults.length; ++i ) {
+				var wDOI = await SEARCH_INDIVIDUAL_PAGE_FOR_META_DATA( wResults[ i ][ "mainURL" ] );
+				wMetaDetails.push( wDOI );
+			}
 			for ( var i = 0; i < wMetaDetails.length; ++i ) {
 				var wDOI = undefined;
 				if ( wMetaDetails[ i ] !== undefined ) {
@@ -121,10 +170,10 @@ function SEARCH() {
 			}
 			wResults = wResults.filter( x => x[ "doi" ] !== undefined );
 
-			// 3.) Compare to Already 'Tracked' DOIs and Store Uneq
+			// 5.) Compare to Already 'Tracked' DOIs and Store Uneq
 			wResults = await FilterUNEQResultsREDIS( wResults );
 
-			// 4.) Post Results
+			// 6.) Post Results
 			await PostResults( wResults );
 
 			console.log( "\nMedicalXPress.com Scan Finished" );
