@@ -9,12 +9,12 @@ process.on( "unhandledRejection" , function( reason , p ) {
 	console.log( xPrps );
 	console.error( reason, "Unhandled Rejection at Promise" , p );
 	console.trace();
-	//POST_SLACK_ERROR( reason );
+	POST_SLACK_ERROR( reason );
 });
 process.on( "uncaughtException" , function( err ) {
 	console.error( err , "Uncaught Exception thrown" );
 	console.trace();
-	//POST_SLACK_ERROR( err );
+	POST_SLACK_ERROR( err );
 });
 
 // function fetchHomeTimeline() {
