@@ -64,10 +64,11 @@ function getDOICheerio( wPubMedID , wDOIOnly ) {
 			if ( wDOI ) {
 				if ( wDOI.length > 3 ) {
 					wOBJ1[ "doi" ] = wDOI;
-					wOBJ1[ "doiB64" ] = EncodeB64( wDOI );
 					if ( !isNaN( wDOI[ 0 ] ) && !isNaN( wDOI[ 1 ] ) ) {
+						wOBJ1[ "doiB64" ] = EncodeB64( wDOI );
 						wOBJ1[ "scihubURL" ] = SCI_HUB_BASE_URL + wDOI;
 					}
+					else { wOBJ1[ "doiB64" ] = EncodeB64( wOBJ1.mainURL ); }
 				}
 			}
 			resolve( wOBJ1 );
@@ -139,7 +140,8 @@ function FILTER_ALREADY_TRACKED_PUBMED_ARTICLE_IDS( wResults ) {
 
 function generateSearchURL( wSearchTerms ) {
 	wSearchTerms = wSearchTerms || [ "autism" , "autistic" ];
-	const today = new Date();
+	var today = new Date();
+	today.setDate( today.getDate() + 60 );
 	const wTY = today.getFullYear();
 	const wTM = ( today.getMonth() + 1 );
 	const wTD = today.getDate();
@@ -169,7 +171,7 @@ function SEARCH( wSearchTerms ) {
 			PrintNowTime();
 
 			// 1.) Get List of PubMedId's ***published *** in search interval
-			const wSearchURL = generateSearchURL();
+			const wSearchURL = generateSearchURL( wSearchTerms );
 			console.log( wSearchURL );
 			var wPubMedResultIDS = await MakeRequest( wSearchURL );
 			wPubMedResultIDS = JSON.parse( wPubMedResultIDS );

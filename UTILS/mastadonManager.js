@@ -60,8 +60,8 @@ function ENUMERATE_STATUS_POSTS( wResults ) {
 			if ( !wResults ) { resolve(); return; }
 			if ( wResults.length < 1 ) { resolve(); return; }
 			for ( var i = 0; i < wResults.length; ++i ) {
-				// await POST_STATUS( wResults[ i ] );
-				// await slackClient.post( wResults[ i ] , "#autism" );
+				await POST_STATUS( wResults[ i ] );
+				await slackClient.post( wResults[ i ] , "#autism" );
 			}
 			resolve();
 		}
@@ -79,7 +79,11 @@ function FORMAT_PAPERS_AND_POST( wResults ) {
 			for ( var i = 0; i < wResults.length; ++i ) {
 				
 				var wTotal = 498;
-				var wMessage = "#AutismResearchPapers ";
+				var wMessage = undefined;
+				if ( wResults[i].scihubURL ) {
+					wMessage = "#AutismResearchPapers ";
+				}
+				else { wMessage = "#AutismResearch "; }
 				var wAvailable = ( wTotal - wMessage.length );
 				// plus 1 for offset of " "
 				if ( wResults[i].mainURL ) { wAvailable = ( wAvailable - ( 23 + 1 ) ); }

@@ -92,6 +92,7 @@ function PARSE_SEARCH_RESULTS( wBody ) {
 }
 
 const BIORXIV_ADVANCED_SEARCH_URL = "https://www.biorxiv.org/search/abstract_title%3Aautism%20abstract_title_flags%3Amatch-all%20numresults%3A100%20sort%3Apublication-date%20direction%3Adescending%20format_result%3Astandard";
+const BIORXIV_ADVANCED_SEARCH_URL_2 = "https://www.biorxiv.org/search/autism%20numresults%3A100%20sort%3Apublication-date%20direction%3Adescending";
 function SEARCH() {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -108,7 +109,7 @@ function SEARCH() {
 			var xTesting_DOIS = wResults.map( x => x[ "doi" ] );
 
 			// 2.) Fetch Advanced Search Results
-			var wAdvanced_Search_Body = await MakeRequest( BIORXIV_ADVANCED_SEARCH_URL );
+			var wAdvanced_Search_Body = await MakeRequest( BIORXIV_ADVANCED_SEARCH_URL_2 );
 			var wAdvanced_Search_Results = PARSE_SEARCH_RESULTS( wAdvanced_Search_Body );
 
 			// 3.) Combine Results

@@ -56,6 +56,7 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			PrintNowTime();
 			
 			// 1.) Get 'Top' Level Threads
+			wOptions = wOptions || [ "science" , "top" , [ "autis" ] ];
 			wSearchTerms = wOptions[ 2 ];
 			var wMainURL = "https://www.reddit.com/r/" + wOptions[ 0 ] + "/" + wOptions[ 1 ] + "/.rss";
 			var wTopThreads = await FetchXMLFeed( wMainURL );
