@@ -3,6 +3,8 @@ const Masto = require( "mastodon" );
 const slackClient = require( "./slackManager.js" );
 slackClient.initialize();
 var wMastadonClient = null;
+require("shelljs/global");
+const wSleep = require( "./genericUtils.js" ).wSleep;
 
 process.on( "unhandledRejection" , function( reason , p ) {
 	var xPrps = Object.keys( reason );
@@ -27,13 +29,18 @@ process.on( "uncaughtException" , function( err ) {
 // }
 
 function POST_SLACK_ERROR( wStatus ) {
-	return new Promise( function( resolve , reject ) {
+	return new Promise( async function( resolve , reject ) {
 		try {
 			if ( typeof wStatus !== "string" ) {
 				try { wStatus = wStatus.toString(); }
 				catch( e ) { wStatus = e; }
 			}
-			slackClient.post( wStatus , "#amb-err" );
+			await slackClient.post( wStatus , "#amb-err" );
+			if ( wStatus === "Error: Page crashed!" ) {
+				await slackClient.post( "Trying to Kill Chrome" , "#amb-err" );
+				exec( "pkill -9 chrome" , { silent: true ,  async: false } );
+				await wSleep( 1000 );
+			}	
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

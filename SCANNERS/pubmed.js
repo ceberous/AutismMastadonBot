@@ -141,7 +141,7 @@ function FILTER_ALREADY_TRACKED_PUBMED_ARTICLE_IDS( wResults ) {
 function generateSearchURL( wSearchTerms ) {
 	wSearchTerms = wSearchTerms || [ "autism" , "autistic" ];
 	var today = new Date();
-	today.setDate( today.getDate() + 60 );
+	today.setDate( today.getDate() + 30 );
 	const wTY = today.getFullYear();
 	const wTM = ( today.getMonth() + 1 );
 	const wTD = today.getDate();
@@ -155,7 +155,7 @@ function generateSearchURL( wSearchTerms ) {
 	var wURL = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=%28%28%28";
 	const wFinal = wSearchTerms.length - 1;
 	for ( var i = 0; i < wSearchTerms.length; ++i ) {
-		wURL = wURL + wSearchTerms[ i ] + "%5BTitle%5D%29+AND+%28%22";
+		wURL = wURL + wSearchTerms[ i ] + "%5BTitle/Abstract%5D%29+AND+%28%22";
 		wURL = wURL + wYY + "%2F" + wYM + "%2F" + wYD + "%22%5BDate+-+Publication%5D+%3A+%22";
 		wURL = wURL + wTY + "%2F" + wTM + "%2F" + wTD + "%22%5BDate+-+Publication%5D%29%29";
 		if ( i !== wFinal ) { wURL = wURL + "+OR+"; }
@@ -172,7 +172,6 @@ function SEARCH( wSearchTerms ) {
 
 			// 1.) Get List of PubMedId's ***published *** in search interval
 			const wSearchURL = generateSearchURL( wSearchTerms );
-			console.log( wSearchURL );
 			var wPubMedResultIDS = await MakeRequest( wSearchURL );
 			wPubMedResultIDS = JSON.parse( wPubMedResultIDS );
 			if ( wPubMedResultIDS[ "esearchresult" ] ) {
@@ -197,9 +196,10 @@ function SEARCH( wSearchTerms ) {
 			wPubMedResultsWithMetaData = wPubMedResultsWithMetaData.filter( x => x[ "doi" ] !== undefined );
 			var wFailedIDS = wFailed.map( x => x[ "pmid" ] );
 			wFailed = await map( wFailedIDS , pubmedID => getDOICheerio( pubmedID ) );
-			wPubMedResultsWithMetaData = [].concat.apply( [] , wFailed );
+			for ( var i = 0; i < wFailed.length; ++i ) {
+				wPubMedResultsWithMetaData.push( wFailed[ i ] );
+			}
 			wPubMedResultsWithMetaData = wPubMedResultsWithMetaData.filter( x => x[ "doi" ] !== undefined );
-			console.log( wPubMedResultsWithMetaData );
 
 			// 5.) Filter Uneq Results
 			wPubMedResultsWithMetaData = await FilterUNEQResultsREDIS( wPubMedResultsWithMetaData );
