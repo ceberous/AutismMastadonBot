@@ -1,3 +1,5 @@
+const URI = require( "uri-js" );
+
 function W_SLEEP( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 module.exports.wSleep = W_SLEEP;
 
@@ -132,7 +134,9 @@ function FETCH_XML_FEED( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 
-			console.log( "Searching --> " + wURL );
+			var attemptURL = wURL;
+
+			console.log( "Searching --> " + attemptURL );
 			var wResults = [];
 
 			var RETRY_COUNT = 3;
@@ -140,11 +144,12 @@ function FETCH_XML_FEED( wURL ) {
 
 			while ( !SUCCESS ) {
 				if ( RETRY_COUNT < 0 ) { SUCCESS = true; }
-				wResults = await TRY_XML_FEED_REQUEST( wURL );
+				wResults = await TRY_XML_FEED_REQUEST( attemptURL );
 				if ( wResults !== "null" ) { SUCCESS = true; }
 				else { 
 					console.log( "retrying again" );
-					console.log( wURL );
+					attemptURL = URI.serialize( URI.parse( attemptURL ) );
+					console.log( attemptURL );
 					RETRY_COUNT = RETRY_COUNT - 1;
 					await W_SLEEP( 2000 );
 				}
