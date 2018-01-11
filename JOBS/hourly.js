@@ -40,7 +40,9 @@ module.exports.scan = function() {
 			try{ await require( "../SCANNERS/ehp-niehs-nih.js" ).search();  }
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/medicalxpress.js" ).search();  }
-			catch( e ) { console.log( e ); }				
+			catch( e ) { console.log( e ); }
+			try{ await require( "../SCANNERS/sagepub.js" ).search();  }
+			catch( e ) { console.log( e ); }							
 			console.log( "HOURLY SCAN FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();		
 			resolve();
