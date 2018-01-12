@@ -11,7 +11,7 @@ const wSleep = require( "../UTILS/genericUtils.js" ).wSleep;
 const DX_DOI_BASE_URL = require( "../CONSTANTS/generic.js" ).DX_DOI_BASE_URL;
 const SCI_HUB_BASE_URL = require( "../CONSTANTS/generic.js" ).SCI_HUB_BASE_URL;
 
-
+const SAGE_PUB_ARTICLE_BASE = "http://journals.sagepub.com";
 function PARSE_SEARCH_RESULTS( wBody ) {
 	try { var $ = cheerio.load( wBody ); }
 	catch( err ) { return "fail"; }
@@ -28,7 +28,7 @@ function PARSE_SEARCH_RESULTS( wBody ) {
 		x1 = x1[ 1 ];
 		finalResults.push({
 			title: wTitle ,
-			mainURL: wDOI ,
+			mainURL: SAGE_PUB_ARTICLE_BASE + wDOI ,
 			doi: x1 ,
 			doiB64: EncodeB64( x1 ) ,
 			scihubURL: SCI_HUB_BASE_URL + x1

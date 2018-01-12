@@ -229,7 +229,8 @@ function RUN_CUSTOM_META_SEARCH( wResults ) {
 }
 
 const SCIENCE_DIRECT_ARTICLE_BASE_URL = "http://www.sciencedirect.com";
-const SEARCH_CUSTOM_SD_RSS_FEED_URL = "http://www.sciencedirect.com/science?_ob=ArticleListURL&_method=tag&searchtype=a&refSource=search&_st=4&count=1000&sort=d&filterType=&_chunk=0&hitCount=1351&NEXT_LIST=1&view=c&md5=b22fecb51422c4f3c951c86d8e7d04d9&_ArticleListID=-1247210502&chunkSize=25&sisr_search=&TOTAL_PAGES=55&zone=exportDropDown&citation-type=RIS&format=cite-abs&bottomPaginationBoxChanged=&displayPerPageFlag=t&resultsPerPage=200";
+const SEARCH_CUSTOM_SD_RSS_FEED_URL_1 = "http://www.sciencedirect.com/science?_ob=ArticleListURL&_method=tag&searchtype=a&refSource=search&_st=4&count=1000&sort=d&filterType=&_chunk=0&hitCount=1351&NEXT_LIST=1&view=c&md5=b22fecb51422c4f3c951c86d8e7d04d9&_ArticleListID=-1247210502&chunkSize=25&sisr_search=&TOTAL_PAGES=55&zone=exportDropDown&citation-type=RIS&format=cite-abs&bottomPaginationBoxChanged=&displayPerPageFlag=t&resultsPerPage=200";
+const SEARCH_CUSTOM_SD_RSS_FEED_URL_2 = "http://www.sciencedirect.com/science?_ob=ArticleListURL&_method=tag&sort=d&sisrterm=&_ArticleListID=-1248608185&view=c&_chunk=0&count=151&_st=&refsource=&md5=309e47b6ba1c91cf55d6e2c805fa6939&searchtype=a&originPage=rslt_list&filterType=";
 function SEARCH() {
 	return new Promise( async function( resolve , reject ) {
 		try {
@@ -239,7 +240,7 @@ function SEARCH() {
 			PrintNowTime();			
 
 			// 1. ) Fetch Latest RSS-Results Matching "autism-keywords"
-			var wResults = await MakeRequest( SEARCH_CUSTOM_SD_RSS_FEED_URL );
+			var wResults = await MakeRequest( SEARCH_CUSTOM_SD_RSS_FEED_URL_2 );
 			wResults = PARSE_MAIN_SEARCH_RESULTS( wResults );
 
 			// 2. ) See if we have already searched it based in its Science-Direct-Article-ID

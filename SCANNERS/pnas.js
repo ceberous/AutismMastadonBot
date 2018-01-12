@@ -45,6 +45,12 @@ function PARSE_RESULTS( xBody ) {
 							if ( wDOI[ x_i ] ) {
 								wDOI = $( wDOI[ x_i ] ).text();
 								wDOI = wDOI.split( "doi:" )[ 1 ];
+								if ( isNaN( wDOI[ 0 ] ) && isNaN( wDOI[ 1 ] ) ) {
+									return false;
+									//var wStart = wDOI.indexOf( "doi:" );
+									//var wEnd = wDOI.indexOf( "</span>" , wStart );
+									//wDOI = wDOI.substring( ( wStart + 11 ) , wEnd );
+								}
 							}
 						}
 					}
