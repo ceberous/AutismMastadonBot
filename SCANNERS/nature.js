@@ -152,7 +152,7 @@ function SEARCH_SINGLE_PAGE( wURL ) {
 
 			// 1.) Search Page
 			wURL = wURL || NATURE_SEARCH_URL;
-			var wResults = await MakeRequest( NATURE_SEARCH_URL );
+			var wResults = await MakeRequest( wURL );
 			wResults = PARSE_NATURE_SEARCH_PAGE( wResults );
 			console.log( wResults );
 
