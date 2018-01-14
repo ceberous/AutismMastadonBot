@@ -142,8 +142,8 @@ function PARSE_NATURE_SEARCH_PAGE( wBody ) {
 }
 
 const NATURE_SEARCH_URL = "https://www.nature.com/search?order=date_desc&q=autism&title=autism&page=1";
-//const NATURE_SEARCH_URL_P2 = "https://www.nature.com/search?order=date_desc&q=autism&title=autism&page=2";
-function SEARCH() {
+const NATURE_SEARCH_URL_P2 = "https://www.nature.com/search?order=date_desc&q=autism&title=autism&page=2";
+function SEARCH_SINGLE_PAGE( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
 			console.log( "\nNature.com Scan Started" );
@@ -151,6 +151,7 @@ function SEARCH() {
 			PrintNowTime();
 
 			// 1.) Search Page
+			wURL = wURL || NATURE_SEARCH_URL;
 			var wResults = await MakeRequest( NATURE_SEARCH_URL );
 			wResults = PARSE_NATURE_SEARCH_PAGE( wResults );
 			console.log( wResults );
@@ -181,6 +182,18 @@ function SEARCH() {
 			console.log( "\nNature.com Scan Finished" );
 			console.log( "" );
 			PrintNowTime();
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.searchSinglePage = SEARCH_SINGLE_PAGE;
+
+function SEARCH() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			await SEARCH_SINGLE_PAGE( NATURE_SEARCH_URL );
+			await SEARCH_SINGLE_PAGE( NATURE_SEARCH_URL_P2 );
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }

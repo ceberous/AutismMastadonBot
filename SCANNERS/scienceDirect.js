@@ -240,7 +240,7 @@ function SEARCH() {
 			PrintNowTime();			
 
 			// 1. ) Fetch Latest RSS-Results Matching "autism-keywords"
-			var wResults = await MakeRequest( SEARCH_CUSTOM_SD_RSS_FEED_URL_2 );
+			var wResults = await MakeRequest( SEARCH_CUSTOM_SD_RSS_FEED_URL_1 );
 			wResults = PARSE_MAIN_SEARCH_RESULTS( wResults );
 
 			// 2. ) See if we have already searched it based in its Science-Direct-Article-ID
