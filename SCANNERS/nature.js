@@ -163,21 +163,28 @@ function SEARCH_SINGLE_PAGE( wURL ) {
 			// 3. ) Lookup DOI for each Article Then
 			const wMainURLS = wResults.map( x => x[ "mainURL" ] );
 			const wMetaStuff = await PROMISE_ALL_ARTICLE_META_SEARCH( wMainURLS );
+			var finalResults = [];
 			for ( var i = 0; i < wResults.length; ++i ) {
 				if ( wMetaStuff[ i ] !== "fail" ) {
-					wResults[ i ][ "doi" ] = wMetaStuff[ i ];
-					wResults[ i ][ "doiB64" ] = EncodeB64( wMetaStuff[ i ] );
-					wResults[ i ][ "scihubURL" ] = SCI_HUB_BASE_URL + wMetaStuff[ i ];
-					await RU.setAdd( redis , R_NATURE_ARTICLES , wResults[ i ][ "nAIDB64" ] );
+					finalResults.push({
+						title: wResults[ i ][ "title" ] ,
+						doi: wMetaStuff[ i ] ,
+						doiB64: EncodeB64( wMetaStuff[ i ] ) ,
+						mainURL: wResults[ i ][ "mainURL" ] ,
+						scihubURL: SCI_HUB_BASE_URL + wMetaStuff[ i ]
+					});
+					if ( wResults[ i ][ "nAIDB64" ] ) {
+						await RU.setAdd( redis , R_NATURE_ARTICLES , wResults[ i ][ "nAIDB64" ] );
+					}
 				}
 			}
-			console.log( wResults );
+			console.log( finalResults );
 
 			// 4.) Compare to Already 'Tracked' DOIs and Store Uneq
-			wResults = await FilterUNEQResultsREDIS( wResults );
+			finalResults = await FilterUNEQResultsREDIS( finalResults );
 
 			// 5.) Post Results
-			await PostResults( wResults );
+			await PostResults( finalResults );
 
 			console.log( "\nNature.com Scan Finished" );
 			console.log( "" );
