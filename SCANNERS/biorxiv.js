@@ -106,7 +106,6 @@ function SEARCH() {
 			wResults = [].concat.apply( [] , wResults );
 			wResults = wResults.map( x => PARSE_XML_RESULTS( x ) );
 			wResults = wResults.filter( x => x !== undefined );
-			var xTesting_DOIS = wResults.map( x => x[ "doi" ] );
 
 			// 2.) Fetch Advanced Search Results
 			var wAdvanced_Search_Body = await MakeRequest( BIORXIV_ADVANCED_SEARCH_URL_2 );
@@ -116,7 +115,9 @@ function SEARCH() {
 			var wAdvanced_Search_Results_DOIS = wAdvanced_Search_Results.map( x => x[ "doi" ] );
 			wResults = wResults.filter( x => wAdvanced_Search_Results_DOIS.indexOf( x[ "doi" ] ) !== -1 );
 			for ( var i = 0; i < wResults.length; ++i ) {
-				wAdvanced_Search_Results.push( wResults[ i ] );
+				if ( wAdvanced_Search_Results_DOIS.indexOf( wResults[ i ][ "doi" ] ) === -1 ) {
+					wAdvanced_Search_Results.push( wResults[ i ] );
+				}
 			}
 
 			// 4.) Filter Uneq

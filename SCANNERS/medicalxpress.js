@@ -1,3 +1,4 @@
+require("shelljs/global");
 const puppeteer = require( "puppeteer" );
 const cheerio = require( "cheerio" );
 
@@ -175,6 +176,7 @@ function SEARCH() {
 			// 6.) Post Results
 			await PostResults( wResults );
 
+			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
 			console.log( "\nMedicalXPress.com Scan Finished" );
 			console.log( "" );
 			PrintNowTime();

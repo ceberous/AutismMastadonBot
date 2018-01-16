@@ -1,3 +1,4 @@
+require("shelljs/global");
 const puppeteer = require( "puppeteer" );
 const cheerio = require( "cheerio" );
 
@@ -84,6 +85,8 @@ function SEARCH( wJournals ) {
 
 			// 4.) Post Results
 			await PostResults( wResults );
+
+			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
 
 			console.log( "" );
 			console.log( "AAIDD_Journals.org Scan Finished" );

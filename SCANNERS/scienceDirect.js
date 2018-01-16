@@ -1,3 +1,4 @@
+require("shelljs/global");
 const process = require( "process" );
 
 const cheerio = require( "cheerio" );
@@ -290,6 +291,8 @@ function SEARCH() {
 			// 7.) Post Results
 			await PostResults( wResults );
 
+			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
+			
 			console.log( "\nScienceDirect.com Scan Finished" );
 			console.log( "" );
 			PrintNowTime();

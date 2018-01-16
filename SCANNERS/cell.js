@@ -1,3 +1,4 @@
+require("shelljs/global");
 //const request = require( "request" ).defaults({maxRedirects:20}); // even this fails , need puppeteer
 const puppeteer = require( "puppeteer" );
 const cheerio = require( "cheerio" );
@@ -93,6 +94,7 @@ function SEARCH( wOptions ) {
 			// 3.) Post Uneq
 			await PostResults( wResults );
 
+			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
 			console.log( "" );
 			console.log( "Cell.com Scan Finished" );
 			PrintNowTime();

@@ -1,3 +1,4 @@
+require("shelljs/global");
 const puppeteer = require( "puppeteer" );
 const cheerio = require( "cheerio" );
 
@@ -76,6 +77,8 @@ function SEARCH() {
 
 			// 4.) Post Results
 			await PostResults( wResults );
+
+			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
 
 			console.log( "" );
 			console.log( "Journals.SagePub.com Scan Finished" );

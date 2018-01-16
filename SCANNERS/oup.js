@@ -1,3 +1,4 @@
+require("shelljs/global");
 const cheerio = require( "cheerio" );
 const puppeteer = require( "puppeteer" );
 
@@ -92,6 +93,8 @@ function SEARCH() {
 			
 			// 3.) Post Results
 			await PostResults( finalResults );
+
+			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
 
 			console.log( "\nAcademic.OUP.com Scan Finished" );
 			console.log( "" );
