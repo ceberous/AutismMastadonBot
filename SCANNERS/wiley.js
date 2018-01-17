@@ -67,7 +67,7 @@ function CUSTOM_SEARCHER() {
 			// 3.) Based on Number of Results , build remaining search URLS
 			// ***limited by them to 20 per page***
 			try { var $ = cheerio.load( wMainPageBody ); }
-			catch(err) { reject( "cheerio load failed" ); return; }			
+			catch( err ) { reject( "cheerio load failed" ); return; }			
 			var wTotalResults = $( "#searchedForText" ).children("em");
 			wTotalResults = $( wTotalResults[0] ).text();
 			wTotalResults = parseInt( wTotalResults );
@@ -82,7 +82,10 @@ function CUSTOM_SEARCHER() {
 
 			// 4. ) Search Secondary Pages
 			var wSecondaryPageResults = await map( wRemainingSearchURLS , wURL => FETCH_AND_PARSE_SINGLE_RESULT_PAGE( wURL ) );
-			finalResults = [].concat.apply( [] , wSecondaryPageResults );
+			for ( var i = 0; i < wSecondaryPageResults.length; ++i ) {
+				finalResults.push( wSecondaryPageResults[ i ] );
+			}
+			//finalResults = [].concat.apply( [] , wSecondaryPageResults );
 
 			resolve( finalResults );
 		}
