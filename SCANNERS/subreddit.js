@@ -112,7 +112,10 @@ function SEARCH_SUBREDDIT( wOptions ) {
 
 			// 7.) Post Unique Results
 			wResults =  wResults.map( x => "#AutismComments " + x["link"] );
-			wFinalPosts = [].concat.apply( [] , wResults );
+			for ( var i = 0; i < wResults.length; ++i ) {
+				wFinalPosts.push( wResults[ i ] );
+			}
+			//wFinalPosts = [].concat.apply( [] , wResults );
 			console.log( wFinalPosts );
 			await PostResults( wFinalPosts );
 
