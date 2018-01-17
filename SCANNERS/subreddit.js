@@ -46,7 +46,20 @@ function SEARCH_SINGLE_THREAD( wComments ) {
 	});
 }
 
-function PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wURLS ) {
+function PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wThreads ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			console.log( "using concurrency" );
+			var wSearchItems = wThreads.map( x => async () => { var x1 = await SEARCH_SINGLE_THREAD( x ); return x1; } );
+			pALL( wSearchItems , { concurrency: 10 } ).then( result => {
+				resolve( result );
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
+function PROMISE_ALL_SUBREDDIT_THREAD_FETCH( wURLS ) {
 	return new Promise( function( resolve , reject ) {
 		try {
 			console.log( "using concurrency" );
@@ -84,7 +97,7 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			// 3.) Get 'Comment' Threads for each 'Top' Thread
 			var wTopCommentURLS = wTopThreads.map( x => x["link"] + ".rss" );
 			//var wTopCommentsThreads = await map( wTopCommentURLS , wURL => FetchXMLFeed( wURL ) );
-			var wTopCommentsThreads = await PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wTopCommentURLS );
+			var wTopCommentsThreads = await PROMISE_ALL_SUBREDDIT_THREAD_FETCH( wTopCommentURLS );
 			wTopCommentsThreads = wTopCommentsThreads.map( function( x ) {
 				try{ x.shift(); return x; }  // 1st one is "main" url
 				catch( e ) { return []; } // this 'knocks-out' any 'bad/empty' requests
@@ -94,13 +107,14 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			// 4.) Get 'Single' Threads for each 'Comment' Thread
 			var wSingleCommentURLS = wTopCommentsThreads.map( x => x["link"] + ".rss" );
 			//var wSingleThreads = await map( wSingleCommentURLS , wURL => FetchXMLFeed( wURL ) );
-			var wSingleThreads = await PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wSingleCommentURLS );
+			var wSingleThreads = await PROMISE_ALL_SUBREDDIT_THREAD_FETCH( wSingleCommentURLS );
 			wSingleThreads = [].concat.apply( [] , wSingleThreads );
 
 			console.log( "\nTotal Single Threads to Search === " + wSingleThreads.length.toString() + "\n" );
 
 			// 5.) Finally, Search over All Single Comments
-			var wResults = await map( wSingleThreads , wThread => SEARCH_SINGLE_THREAD( wThread ) );
+			//var wResults = await map( wSingleThreads , wThread => SEARCH_SINGLE_THREAD( wThread ) );
+			var wResults = await PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wSingleThreads );
 			wResults = [].concat.apply( [] , wResults );
 			// Ugly as fuck , but I'm sorry
 			var wUneqIDS = [];
