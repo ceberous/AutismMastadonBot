@@ -46,25 +46,25 @@ function SEARCH_SINGLE_THREAD( wComments ) {
 	});
 }
 
-function PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wThreads ) {
-	return new Promise( function( resolve , reject ) {
-		try {
-			console.log( "using concurrency" );
-			var wSearchItems = wThreads.map( x => async () => { var x1 = await SEARCH_SINGLE_THREAD( x ); return x1; } );
-			pALL( wSearchItems , { concurrency: 10 } ).then( result => {
-				resolve( result );
-			});
-		}
-		catch( error ) { console.log( error ); reject( error ); }
-	});
-}
+// function PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wThreads ) {
+// 	return new Promise( function( resolve , reject ) {
+// 		try {
+// 			console.log( "using concurrency" );
+// 			var wSearchItems = wThreads.map( x => async () => { var x1 = await SEARCH_SINGLE_THREAD( x ); return x1; } );
+// 			pALL( wSearchItems , { concurrency: 10 } ).then( result => {
+// 				resolve( result );
+// 			});
+// 		}
+// 		catch( error ) { console.log( error ); reject( error ); }
+// 	});
+// }
 
 function PROMISE_ALL_SUBREDDIT_THREAD_FETCH( wURLS ) {
 	return new Promise( function( resolve , reject ) {
 		try {
 			console.log( "using concurrency" );
 			var wThreads = wURLS.map( x => async () => { var x1 = await FetchXMLFeed( x ); return x1; } );
-			pALL( wThreads , { concurrency: 10 } ).then( result => {
+			pALL( wThreads , { concurrency: 30 } ).then( result => {
 				resolve( result );
 			});
 		}
@@ -113,8 +113,8 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			console.log( "\nTotal Single Threads to Search === " + wSingleThreads.length.toString() + "\n" );
 
 			// 5.) Finally, Search over All Single Comments
-			//var wResults = await map( wSingleThreads , wThread => SEARCH_SINGLE_THREAD( wThread ) );
-			var wResults = await PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wSingleThreads );
+			var wResults = await map( wSingleThreads , wThread => SEARCH_SINGLE_THREAD( wThread ) );
+			//var wResults = await PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wSingleThreads );
 			wResults = [].concat.apply( [] , wResults );
 			// Ugly as fuck , but I'm sorry
 			var wUneqIDS = [];
