@@ -121,8 +121,10 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			var wFinalUneq = [];
 			for ( var i = 0; i < wResults.length; ++i ) {
 				if ( wUneqIDS.indexOf( wResults[ i ][ "id" ] ) === -1 ) {
-					wUneqIDS.push( wResults[ i ][ "id" ] );
-					wFinalUneq.push( wResults[ i ] );
+					if ( wResults[ i ][ "link" ] ) {
+						wUneqIDS.push( wResults[ i ][ "id" ] );
+						wFinalUneq.push( wResults[ i ] );
+					}
 				}
 			}
 			wResults = wFinalUneq;
