@@ -82,10 +82,10 @@ function CUSTOM_SEARCHER() {
 
 			// 4. ) Search Secondary Pages
 			var wSecondaryPageResults = await map( wRemainingSearchURLS , wURL => FETCH_AND_PARSE_SINGLE_RESULT_PAGE( wURL ) );
+			wSecondaryPageResults = [].concat.apply( [] , wSecondaryPageResults );
 			for ( var i = 0; i < wSecondaryPageResults.length; ++i ) {
 				finalResults.push( wSecondaryPageResults[ i ] );
 			}
-			//finalResults = [].concat.apply( [] , wSecondaryPageResults );
 
 			resolve( finalResults );
 		}
