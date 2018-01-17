@@ -1,5 +1,6 @@
 const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
 const { map } = require( "p-iteration" );
+const pALL = require( "p-all" );
 const PostResults = require( "../UTILS/mastadonManager.js" ).emumerateStatusPosts;
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const redis = require( "../UTILS/redisManager.js" ).redisClient;
@@ -45,6 +46,19 @@ function SEARCH_SINGLE_THREAD( wComments ) {
 	});
 }
 
+function PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wURLS ) {
+	return new Promise( function( resolve , reject ) {
+		try {
+			console.log( "using concurrency" );
+			var wThreads = wURLS.map( x => async () => { var x1 = await FetchXMLFeed( x ); return x1; } );
+			pALL( wThreads , { concurrency: 10 } ).then( result => {
+				resolve( result );
+			});
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+
 const R_SUBREDDIT_PLACEHOLDER = "SCANNERS.SUBREDDIT.PLACEHOLDER";
 const R_PUBMED_NEW_TRACKING = "SCANNERS.SUBREDDIT.NEW_TRACKING";
 const R_GLOBAL_ALREADY_TRACKED = "SCANNERS.SUBREDDIT.ALREADY_TRACKED";
@@ -69,7 +83,8 @@ function SEARCH_SUBREDDIT( wOptions ) {
 
 			// 3.) Get 'Comment' Threads for each 'Top' Thread
 			var wTopCommentURLS = wTopThreads.map( x => x["link"] + ".rss" );
-			var wTopCommentsThreads = await map( wTopCommentURLS , wURL => FetchXMLFeed( wURL ) );
+			//var wTopCommentsThreads = await map( wTopCommentURLS , wURL => FetchXMLFeed( wURL ) );
+			var wTopCommentsThreads = await PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wTopCommentURLS );
 			wTopCommentsThreads = wTopCommentsThreads.map( function( x ) {
 				try{ x.shift(); return x; }  // 1st one is "main" url
 				catch( e ) { return []; } // this 'knocks-out' any 'bad/empty' requests
@@ -78,7 +93,8 @@ function SEARCH_SUBREDDIT( wOptions ) {
 
 			// 4.) Get 'Single' Threads for each 'Comment' Thread
 			var wSingleCommentURLS = wTopCommentsThreads.map( x => x["link"] + ".rss" );
-			var wSingleThreads = await map( wSingleCommentURLS , wURL => FetchXMLFeed( wURL ) );
+			//var wSingleThreads = await map( wSingleCommentURLS , wURL => FetchXMLFeed( wURL ) );
+			var wSingleThreads = await PROMISE_ALL_SUBREDDIT_THREAD_SEARCH( wSingleCommentURLS );
 			wSingleThreads = [].concat.apply( [] , wSingleThreads );
 
 			console.log( "\nTotal Single Threads to Search === " + wSingleThreads.length.toString() + "\n" );
