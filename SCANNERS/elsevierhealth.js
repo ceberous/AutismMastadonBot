@@ -1,10 +1,14 @@
+require("shelljs/global");
+const puppeteer = require( "puppeteer" );
 const cheerio = require( "cheerio" );
 const { map } = require( "p-iteration" );
 
+const redis = require( "../UTILS/redisManager.js" ).redisClient;
+const RU = require( "../UTILS/redisUtils.js" );
 const PostResults = require( "../UTILS/mastadonManager.js" ).formatPapersAndPost;
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
-const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
+const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeedBasic;
 const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
@@ -27,6 +31,7 @@ function PARSE_XML_RESULTS( wResults ) {
 	var finalResults = [];
 	for ( var i = 0; i < wResults.length; ++i ) {
 
+		if ( !wResults[ i ] ) { continue; }
 		var wFoundInTitle = false;
 		var wTitle = null;
 		if ( wResults[ i ][ "title" ] ) {
@@ -48,17 +53,46 @@ function PARSE_XML_RESULTS( wResults ) {
 
 		if ( wFoundInTitle || wFoundInDescription /*|| wFoundInSummary*/ ) {
 			wTitle = wTitle.trim();
-			console.log( wTitle );
-			console.log( wMainURL );
 			var wMainURL = wResults[ i ][ "link" ];
-			finalResults.push({
-				title: wTitle ,
-				mainURL: wMainURL ,
-			});
+			if ( !wMainURL ) {
+				console.log( wResults[ i ] );
+				continue;
+				//process.exit(1);
+			}
+			var xFinal0BJ = { title: wTitle , mainURL: wMainURL };
+			var elsevier_article_id = wMainURL.split( "/fulltext?rss=yes" )[ 0 ];
+			if ( elsevier_article_id ) {
+				elsevier_article_id = elsevier_article_id.split( "article/" )[ 1 ];
+				if ( elsevier_article_id ) {
+					xFinal0BJ[ "elsevierAID" ] = elsevier_article_id;
+					xFinal0BJ[ "elsevierAIDB64" ] = EncodeB64( elsevier_article_id );
+				}
+			}
+			console.log( xFinal0BJ );
+			finalResults.push( xFinal0BJ );
 		}
 
 	}
 	return finalResults;
+}
+
+function CUSTOM_PUPPETEER_FETCHER( wURL ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.log( wURL );
+			const browser = await puppeteer.launch({ headless: true , /* slowMo: 2000 */  });
+			const page = await browser.newPage();
+			await page.setViewport( { width: 1200 , height: 700 } );
+			//await page.setJavaScriptEnabled( false );
+			await page.goto( wURL , { timeout: ( 120 * 1000 ) , waitUntil: "networkidle0" } );
+			//await page.waitFor( 6000 );
+			const wBody = await page.content();
+			await browser.close();
+			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
+			resolve( wBody );			
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
 }
 
 // RSS_URLS
@@ -67,17 +101,63 @@ function PARSE_XML_RESULTS( wResults ) {
 function SEARCH_SINGLE_ELSEVIER_ARTICLE( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-			var wBody = await MakeRequest( wURL );
+			console.log( "Searching --> " + wURL );
+			var wBody = await CUSTOM_PUPPETEER_FETCHER( wURL );
 			try { var $ = cheerio.load( wBody ); }
-			catch( err ) { resolve( "fail" ); return; }
+			catch( err ) { console.log( "cheerio fail" ); resolve( "fail" ); return; }
 
-			var wDOI = $( ".doi" ).children( "a" );
-			wDOI = $( wDOI ).attr( "href" );
-			wDOI = wDOI.split( "/doi.org/" )[1];
+			var wDOI = $( ".doi" );
+			if ( !wDOI ) { console.log( "no .doi divs ?" ); resolve( "fail" ); return; }
+			wDOI = $( wDOI[ 0 ] ).find( "a" );
+			if ( !wDOI ) { console.log( "no <a> tags ?" ); resolve( "fail" ); return; }
+			wDOI = $( wDOI[ 0 ] ).attr( "href" );
+			if ( !wDOI ) { console.log( "no href attribute ?" ); resolve( "fail" ); return; }
+			wDOI = wDOI.split( "doi.org/" )[ 1 ];
+			if ( !wDOI ) { console.log( "no doi ?" ); resolve( "fail" ); return; }
 
-			resolve( wDOI );
+			resolve( { "doi":  wDOI } );
 		}
 		catch( error ) { console.log( error ); resolve( "fail" ); }
+	});
+}
+
+const R_ELSIEVER_ARTICLES = "SCANNERS_ELSIEVER.ALREADY_TRACKED";
+function FILTER_ALREADY_TRACKED_ELSIEVER_ARTICLE_IDS( wResults ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			var wArticleIDS_B64 = wResults.map( x => x[ "elsevierAIDB64" ] );
+			//console.log( wArticleIDS_B64 );
+
+			// 1.) Generate Random-Temp Key
+			var wTempKey = Math.random().toString(36).substring(7);
+			var R_PLACEHOLDER = "SCANNERS." + wTempKey + ".PLACEHOLDER";
+			var R_NEW_TRACKING = "SCANNERS." + wTempKey + ".NEW_TRACKING";
+
+			await RU.setSetFromArray( redis , R_PLACEHOLDER , wArticleIDS_B64 );
+			await RU.setDifferenceStore( redis , R_NEW_TRACKING , R_PLACEHOLDER , R_ELSIEVER_ARTICLES );
+			await RU.delKey( redis , R_PLACEHOLDER );
+			//await RU.setSetFromArray( redis , R_GLOBAL_ALREADY_TRACKED_DOIS , wArticleIDS_B64 );
+
+			const wNewTracking = await RU.getFullSet( redis , R_NEW_TRACKING );
+			if ( !wNewTracking ) { 
+				await RU.delKey( redis , R_NEW_TRACKING ); 
+				console.log( "nothing new found" ); 
+				PrintNowTime(); 
+				resolve( [] );
+				return;
+			}
+			if ( wNewTracking.length < 1 ) {
+				await RU.delKey( redis , R_NEW_TRACKING );
+				console.log( "nothing new found" ); 
+				PrintNowTime();
+				resolve( [] );
+				return;
+			}
+			wResults = wResults.filter( x => wNewTracking.indexOf( x[ "elsevierAIDB64" ] ) !== -1 );
+			await RU.delKey( redis , R_NEW_TRACKING );
+			resolve( wResults );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
 
@@ -93,28 +173,37 @@ function SEARCH() {
 			var wFinalResults = [];
 			for ( var i = 0; i < RSS_URLS.length; ++i ) {
 				console.log( "\nBatch [ " + ( i + 1 ).toString() + " ] of " + RSS_URLS.length.toString() );
-				var wResults = await map( RSS_URLS[ 0 ] , wURL => FetchXMLFeed( wURL ) );
-				wResults = wResults.map( x => PARSE_XML_RESULTS( x ) );
-				wResults = [].concat.apply( [] , wResults );
-				wFinalResults = [].concat.apply( [] , wResults );
-			}
-
-			// 2.) Gather 'Meta' info for each Matched Item
-			var wMetaURLS = wResults.map( x => x[ "mainURL" ] );
-			wMetaURLS = await map( wMetaURLS , wURL => SEARCH_SINGLE_ELSEVIER_ARTICLE( wURL ) );
-			for ( var i = 0; i < wResults.length; ++i ) {
-				wResults[ i ][ "doi" ] = wMetaURLS[ i ];
-				wResults[ i ][ "doiB64" ] = EncodeB64( wMetaURLS[ i ] );
-				if ( wMetaURLS[ i ] !== "fail" ) {
-					wResults[ i ][ "scihubURL" ] = SCI_HUB_BASE_URL + wMetaURLS[ i ];
+				var wResults = await map( RSS_URLS[ i ] , wURL => FetchXMLFeed( wURL ) );
+				var parsedResults = wResults.map( x => PARSE_XML_RESULTS( x ) );
+				parsedResults = [].concat.apply( [] , parsedResults );
+				for ( var j = 0; j < parsedResults.length; ++j ) {
+					wFinalResults.push( parsedResults[ j ] );
 				}
 			}
 
-			// 3.) Compare to Already 'Tracked' DOIs and Store Uneq
-			wResults = await FilterUNEQResultsREDIS( wResults );
+			// 2.) Compare to already "meta-data-gathered" elsiever articles
+			wFinalResults = await FILTER_ALREADY_TRACKED_ELSIEVER_ARTICLE_IDS( wFinalResults );
+			console.log( wFinalResults );
 
-			// 4.) Post Results
-			await PostResults( wResults );
+			// 3.) Gather 'Meta' info for each Matched Item
+			for ( var i = 0; i < wFinalResults.length; ++i ) {
+				var wMeta = await SEARCH_SINGLE_ELSEVIER_ARTICLE( wFinalResults[ i ][ "mainURL" ] );
+				if ( !wMeta ) { continue; }
+				if ( wMeta === "fail" ) { continue; }
+				wFinalResults[ i ][ "doi" ] = wMeta[ "doi" ];
+				wFinalResults[ i ][ "doiB64" ] = EncodeB64( wMeta[ "doi" ] );
+				wFinalResults[ i ][ "scihubURL" ] = SCI_HUB_BASE_URL + wMeta[ "doi" ];
+				await RU.setAdd( redis , R_ELSIEVER_ARTICLES , wFinalResults[ i ][ "elsevierAIDB64" ] );
+				console.log( wFinalResults[ i ] );
+			}
+			console.log( wFinalResults );
+
+
+			// 4.) Compare to Already 'Tracked' DOIs and Store Uneq
+			wFinalResults = await FilterUNEQResultsREDIS( wFinalResults );
+
+			// 5.) Post Results
+			await PostResults( wFinalResults );
 
 			console.log( "\nElevierHealth.com Scan Finished" );
 			console.log( "" );

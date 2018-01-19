@@ -5,7 +5,7 @@ const RSS_URLS = [
 		//"http://www.aornjournal.org/current.rss" ,
 		"http://www.academicpedsjnl.net/current.rss" ,
 		"http://www.academicradiology.org/current.rss" ,
-		"http://www.e-aat.com/current.rss" ,
+		//"http://www.e-aat.com/current.rss" ,
 		"http://www.advancesinanesthesia.com/current.rss" ,
 		"http://www.ackdjournal.org/current.rss" ,
 		"http://www.aimedjournal.com/current.rss" ,

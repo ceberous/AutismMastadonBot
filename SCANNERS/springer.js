@@ -5,6 +5,11 @@ const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
 
+const Advanced_Search_1 = "https://link.springer.com/search?date-facet-mode=between&facet-start-year=2018&sortOrder=newestFirst&facet-end-year=2018&query=%28autism+OR+autistic+OR+Autism+OR+Autistic+OR+ASD%29&showAll=true";
+const Advanced_Search_1_RSS = "https://link.springer.com/search.rss?date-facet-mode=between&facet-start-year=2018&sortOrder=newestFirst&facet-end-year=2018&query=%28autism+OR+autistic+OR+Autism+OR+Autistic+OR+ASD%29&showAll=true";
+
+const Advanced_Search_1_CSV = "https://link.springer.com/search/csv?date-facet-mode=between&facet-start-year=2018&sortOrder=newestFirst&facet-end-year=2018&query=(autism+OR+autistic+OR+Autism+OR+Autistic+OR+ASD)&showAll=true";
+
 const SPRINGER_SEARCH_URL_P1 = "https://link.springer.com/search.rss?date-facet-mode=between&sortOrder=newestFirst&facet-end-year="
 const SPRINGER_SEARCH_URL_P2 = "&facet-start-year=";
 const SPRINGER_SEARCH_URL_P3 = "&query=autism&dc.title=autism&showAll=true&facet-content-type=%22Article%22";

@@ -1,5 +1,5 @@
 const URI = require( "uri-js" );
-
+require( "events" ).EventEmitter.prototype._maxListeners = 100;
 function W_SLEEP( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
 module.exports.wSleep = W_SLEEP;
 
@@ -106,7 +106,7 @@ function TRY_XML_FEED_REQUEST( wURL ) {
 
 			var wResults = [];
 			var feedparser = new FeedParser( [{ "normalize": true , "feedurl": wURL }] );
-			feedparser.on( "error" , function( error ) { console.log( error ); resolve("null"); } );
+			feedparser.on( "error" , function( error ) { resolve("null"); } );
 			feedparser.on( "readable" , function () {
 				var stream = this; 
 				var item;
@@ -118,7 +118,7 @@ function TRY_XML_FEED_REQUEST( wURL ) {
 			});
 
 			var wReq = request( wURL );
-			wReq.on( "error" , function( error ) { console.log( error ); resolve( "null" ); });
+			wReq.on( "error" , function( error ) { resolve( "null" ); });
 			wReq.on( "response" , function( res ){
 				var stream = this;
 				if ( res.statusCode !== 200) { console.log( "bad status code" ); resolve("null"); return; }
@@ -130,6 +130,19 @@ function TRY_XML_FEED_REQUEST( wURL ) {
 	});
 }
 const FeedParser = require( "feedparser" );
+function FETCH_XML_FEED_BASIC( wURL ) {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.log( "Searching --> " + wURL );
+			var wResults = [];
+			wResults = await TRY_XML_FEED_REQUEST( wURL );
+			resolve( wResults );
+
+		}
+		catch( error ) { console.log( error ); resolve("null"); }
+	});
+}
+module.exports.fetchXMLFeedBasic = FETCH_XML_FEED_BASIC;
 function FETCH_XML_FEED( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
