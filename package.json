@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
+    "csvtojson": "^1.1.9",
     "feedparser": "^2.2.1",
     "mastodon": "^1.2.1",
     "node-schedule": "^1.2.5",

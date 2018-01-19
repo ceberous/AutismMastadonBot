@@ -1,6 +1,9 @@
+const csv = require( "csvtojson" );
+
 const PostResults = require( "../UTILS/mastadonManager.js" ).formatPapersAndPost;
 const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
+const MakeRequest = require( "../UTILS/genericUtils.js" ).makeRequest;
 const FetchXMLFeed = require( "../UTILS/genericUtils.js" ).fetchXMLFeed;
 const FilterUNEQResultsREDIS = require( "../UTILS/genericUtils.js" ).filterUneqResultsCOMMON;
 
@@ -30,39 +33,63 @@ function scanText( wText ) {
 	return false;
 }
 
-function PARSE_XML_RESULTS( wResults ) {
+function PARSE_CSV_RESULTS( wResults ) {
 	return new Promise( function( resolve , reject ) {
 		try {
-
 			var finalResults = [];
-			for ( var i = 0; i < wResults.length; ++i ) {
-
-				var wTitle = wResults[ i ][ "title" ];
-				if ( wTitle ) { wTitle = wTitle.trim(); }
-				var wFoundInTitle = scanText( wTitle );
-				var wDescription = wResults[ i ][ "rss:description" ][ "#" ];
-				if ( wDescription ) { wDescription = wDescription.trim(); }
-				var wFoundInDescription = scanText( wDescription );
-
-				if ( wFoundInTitle || wFoundInDescription ) {
-					var wMainURL = wResults[ i ][ "link" ];
-					var wDOI = wMainURL.split( "http://link.springer.com/" )[1];
-					finalResults.push({
-						title: wTitle ,
-						doi: wDOI ,
-						doiB64: EncodeB64( wDOI ) ,
-						mainURL: wMainURL ,
-						scihubURL: SCI_HUB_BASE_URL + wDOI
-					});
-				}
-
-			}
-
-			resolve( finalResults );
+			csv( { noheader: false } )
+			.fromString( wResults )
+			.on( "csv" , ( csvRow ) => {
+				const wDOI = csvRow[ 5 ];
+				finalResults.push({
+					title: csvRow[ 0 ] ,
+					doi: wDOI ,
+					doiB64: EncodeB64( wDOI ) ,
+					mainURL: csvRow[ 8 ] ,
+					scihubURL: SCI_HUB_BASE_URL + wDOI
+				});
+			})
+			.on( "done" , () => {
+				resolve( finalResults );
+			});	
 		}
 		catch( error ) { console.log( error ); reject( error ); }
 	});
 }
+
+// function PARSE_XML_RESULTS( wResults ) {
+// 	return new Promise( function( resolve , reject ) {
+// 		try {
+
+// 			var finalResults = [];
+// 			for ( var i = 0; i < wResults.length; ++i ) {
+
+// 				var wTitle = wResults[ i ][ "title" ];
+// 				if ( wTitle ) { wTitle = wTitle.trim(); }
+// 				var wFoundInTitle = scanText( wTitle );
+// 				var wDescription = wResults[ i ][ "rss:description" ][ "#" ];
+// 				if ( wDescription ) { wDescription = wDescription.trim(); }
+// 				var wFoundInDescription = scanText( wDescription );
+
+// 				if ( wFoundInTitle || wFoundInDescription ) {
+// 					var wMainURL = wResults[ i ][ "link" ];
+// 					var wDOI = wMainURL.split( "http://link.springer.com/" )[1];
+// 					finalResults.push({
+// 						title: wTitle ,
+// 						doi: wDOI ,
+// 						doiB64: EncodeB64( wDOI ) ,
+// 						mainURL: wMainURL ,
+// 						scihubURL: SCI_HUB_BASE_URL + wDOI
+// 					});
+// 				}
+
+// 			}
+
+// 			resolve( finalResults );
+// 		}
+// 		catch( error ) { console.log( error ); reject( error ); }
+// 	});
+// }
 
 function GENERATE_NOW_URL() {
 	var today = new Date();
@@ -79,14 +106,16 @@ function SEARCH() {
 			PrintNowTime();			
 
 			// 1. ) Fetch Latest Results
-			var wURL = GENERATE_NOW_URL();
-			var wResults = await FetchXMLFeed( wURL );
-			wResults = await PARSE_XML_RESULTS( wResults );
+			// var wURL = GENERATE_NOW_URL();
+			// var wResults = await FetchXMLFeed( wURL );
+			// wResults = await PARSE_XML_RESULTS( wResults );
+			var wResultsCSV = await MakeRequest( Advanced_Search_1_CSV );
+			var wResults = await PARSE_CSV_RESULTS( wResultsCSV );
 
 			// 2.) Compare to Already 'Tracked' DOIs and Store Uneq
 			wResults = await FilterUNEQResultsREDIS( wResults );
 
-			// 3.) Post Results
+			// // 3.) Post Results
 			await PostResults( wResults );
 
 			console.log( "\nSpringer.com Scan Finished" );
