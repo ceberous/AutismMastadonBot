@@ -31,8 +31,6 @@ module.exports.scan = function() {
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/jamanetwork.js" ).search(); }
 			catch( e ) { console.log( e ); }
-			try{ await require( "../SCANNERS/aaiddjournals.js" ).search(); }
-			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/scienceDirect.js" ).search();  }
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/plos.js" ).search();  }
@@ -40,9 +38,7 @@ module.exports.scan = function() {
 			try{ await require( "../SCANNERS/ehp-niehs-nih.js" ).search();  }
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/medicalxpress.js" ).search();  }
-			catch( e ) { console.log( e ); }
-			try{ await require( "../SCANNERS/sagepub.js" ).search();  }
-			catch( e ) { console.log( e ); }							
+			catch( e ) { console.log( e ); }					
 			console.log( "HOURLY SCAN FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();		
 			resolve();

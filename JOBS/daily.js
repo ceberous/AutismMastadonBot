@@ -9,6 +9,10 @@ module.exports.scan = function() {
 			catch( e ) { console.log( e ); }
 			try{ await require( "../SCANNERS/pnas.js" ).search(); }
 			catch( e ) { console.log( e ); }
+			try{ await require( "../SCANNERS/aaiddjournals.js" ).search(); }
+			catch( e ) { console.log( e ); }			
+			try{ await require( "../SCANNERS/sagepub.js" ).search();  }
+			catch( e ) { console.log( e ); }			
 			console.log( "DAYLIES_SCANS FINISHED" );
 			require( "../UTILS/genericUtils.js" ).printNowTime();
 			resolve();

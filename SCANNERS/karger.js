@@ -14,7 +14,7 @@ const KARGER_RSS_URLS = require( "../CONSTANTS/karger.js" ).URLS;
 
 const SPEC_SEARCH_TERMS = [ "autism" , "autistic" , "ASD" ];
 function scanText( wText ) {
-	
+	if ( !wText ) { return false; }
 	for ( var i = 0; i < SPEC_SEARCH_TERMS.length; ++i ) {
 		var wSTResult = wText.indexOf( SPEC_SEARCH_TERMS[ i ] );
 		if ( wSTResult !== -1 ) {

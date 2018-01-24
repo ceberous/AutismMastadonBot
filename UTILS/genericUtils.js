@@ -44,6 +44,7 @@ function MAKE_REQUEST_WITH_RETRY( wURL , wRetryAttempts ) {
 							console.log( wURL + "\n\t--> RESPONSE_CODE = " + response.statusCode.toString() );
 							if ( response.statusCode !== 200 ) {
 								console.log( "bad status code ... " );
+								//require( "./mastadonManager.js" ).postSlackError( wURL + " === " + response.statusCode  );
 								resolve( "error" );
 								return;
 							}
@@ -85,6 +86,7 @@ function MAKE_REQUEST( wURL ) {
 				console.log( wURL + "\n\t--> RESPONSE_CODE = " + response.statusCode.toString() );
 				if ( response.statusCode !== 200 ) {
 					//console.log( "bad status code ... " );
+					//require( "./mastadonManager.js" ).postSlackError( wURL + " === " + response.statusCode  );
 					resolve( "error" );
 					return;
 				}

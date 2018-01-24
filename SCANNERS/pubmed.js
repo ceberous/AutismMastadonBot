@@ -63,12 +63,14 @@ function getDOICheerio( wPubMedID , wDOIOnly ) {
 			wOBJ1.mainURL = NCBI_NIH_ARTICLE_BASE_URL + wPubMedID;
 			if ( wDOI ) {
 				if ( wDOI.length > 3 ) {
-					wOBJ1[ "doi" ] = wDOI;
-					if ( !isNaN( wDOI[ 0 ] ) && !isNaN( wDOI[ 1 ] ) ) {
-						wOBJ1[ "doiB64" ] = EncodeB64( wDOI );
-						wOBJ1[ "scihubURL" ] = SCI_HUB_BASE_URL + wDOI;
+					if ( wDOI !== "/home/abou" ) {
+						wOBJ1[ "doi" ] = wDOI;
+						if ( !isNaN( wDOI[ 0 ] ) && !isNaN( wDOI[ 1 ] ) ) {
+							wOBJ1[ "doiB64" ] = EncodeB64( wDOI );
+							wOBJ1[ "scihubURL" ] = SCI_HUB_BASE_URL + wDOI;
+						}
+						else { wOBJ1[ "doiB64" ] = EncodeB64( wOBJ1.mainURL ); }
 					}
-					else { wOBJ1[ "doiB64" ] = EncodeB64( wOBJ1.mainURL ); }
 				}
 			}
 			resolve( wOBJ1 );
