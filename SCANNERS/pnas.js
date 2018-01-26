@@ -19,43 +19,28 @@ function PARSE_RESULTS( xBody ) {
 			try { var $ = cheerio.load( xBody ); }
 			catch( err ) { console.log( err ); resolve( [] ); return; }
 
-			var wResultList = $( ".results-cit-list" );
+			console.log( "here" );
+			var wResultList = $( ".highwire-search-results-list" );
 			if ( !wResultList ) { console.log( "No Results" ); resolve( [] ); return; }
 			wResultList = $( wResultList ).children();
+			if ( !wResultList ) { console.log( "No Results" ); resolve( [] ); return; }
+			console.log( "there" );
 
 			var finalResults = [];
 			$( wResultList ).each( function() {
 				
-				var wContainer = $( this ).children();
-				wContainer = $( wContainer[ 0 ] ).children();
+				var wTitle = $( this ).find( "span[class='highwire-cite-title']" );
+				if ( !wTitle ) { return false; }
+				wTitle = $( wTitle ).text();
+				if ( !wTitle ) { return false; }
 
-				var wTitle = $( wContainer[ 1 ] ).children( ".cit-title" );
-				if ( wTitle ) {
-					if ( wTitle[0] ) {
-						wTitle = $( wTitle[0] ).text();
-						if ( wTitle ) { wTitle = wTitle.trim(); }
-					}
-				}
-
-				var wDOI = $( wContainer[ 1 ] ).children();
-				if ( wDOI ) {
-					if ( wDOI[ 3 ] ) {
-						wDOI = $( wDOI[ 3 ] ).children();
-						if ( wDOI ) {
-							var x_i = ( wDOI.length - 1 );
-							if ( wDOI[ x_i ] ) {
-								wDOI = $( wDOI[ x_i ] ).text();
-								wDOI = wDOI.split( "doi:" )[ 1 ];
-								if ( isNaN( wDOI[ 0 ] ) && isNaN( wDOI[ 1 ] ) ) {
-									return false;
-									//var wStart = wDOI.indexOf( "doi:" );
-									//var wEnd = wDOI.indexOf( "</span>" , wStart );
-									//wDOI = wDOI.substring( ( wStart + 11 ) , wEnd );
-								}
-							}
-						}
-					}
-				}
+				var wDOI = $( this ).find( "span[class='highwire-cite-metadata-doi highwire-cite-metadata']" );
+				if ( !wDOI ) { return false; }
+				wDOI = $( wDOI ).children();
+				if ( !wDOI ) { return false; }
+				wDOI = $( wDOI[0] ).attr( "href" );
+				if ( !wDOI ) { return false; }
+				wDOI = wDOI.split( "doi.org/" )[1];
 
 				finalResults.push({
 					title: wTitle , 
@@ -74,11 +59,13 @@ function PARSE_RESULTS( xBody ) {
 }
 
 
-const PNAS_URL_BASE = "http://www.pnas.org/search?tmonth=";
-const PNAS_URL_P1 = "&pubdate_year=&submit=yes&submit=yes&submit=Submit&andorexacttitle=and&format=standard&firstpage=&fmonth=";
-const PNAS_URL_P2 = "&title=&tyear=";
-const PNAS_URL_P3 = "&hits=200&titleabstract=autism&volume=&sortspec=date&andorexacttitleabs=or&author2=&tocsectionid=all&andorexactfulltext=and&author1=&fyear=";
-const PNAS_URL_P4 = "&doi=&fulltext=";
+// const PNAS_URL_BASE = "http://www.pnas.org/search?tmonth=";
+// const PNAS_URL_P1 = "&pubdate_year=&submit=yes&submit=yes&submit=Submit&andorexacttitle=and&format=standard&firstpage=&fmonth=";
+// const PNAS_URL_P2 = "&title=&tyear=";
+// const PNAS_URL_P3 = "&hits=200&titleabstract=autism&volume=&sortspec=date&andorexacttitleabs=or&author2=&tocsectionid=all&andorexactfulltext=and&author1=&fyear=";
+// const PNAS_URL_P4 = "&doi=&fulltext=";
+
+const PNAS_NEW_URL_P1 = "http://www.pnas.org/search/abstract_title%3Aautism%2B%20abstract_title_flags%3Amatch-any%20limit_from%3A2017-12-01%20limit_to%3A2018-12-31%20numresults%3A100%20sort%3Apublication-date%20direction%3Adescending%20format_result%3Astandard";
 function generateSearchURL() {
 
 	const wNow = new Date();
@@ -113,11 +100,11 @@ function SEARCH( wOptions ) {
 			PrintNowTime();
 			
 			// 1.) Search for Results
-			const S_URL = generateSearchURL();
-			console.log( S_URL );
+			//const S_URL = generateSearchURL();
+			console.log( PNAS_NEW_URL_P1 );
 			const browser = await puppeteer.launch();
 			const page = await browser.newPage();
-			await page.goto( S_URL , { timeout: ( 150 * 1000 ) , waitUntil: "networkidle2" });
+			await page.goto( PNAS_NEW_URL_P1 , { timeout: ( 150 * 1000 ) , waitUntil: "networkidle2" });
 			var wBody = await page.content();
 			await browser.close();
 			var wResults = await PARSE_RESULTS( wBody );
