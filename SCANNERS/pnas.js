@@ -40,6 +40,7 @@ function PARSE_RESULTS( xBody ) {
 				if ( !wDOI ) { return false; }
 				wDOI = $( wDOI[0] ).attr( "href" );
 				if ( !wDOI ) { return false; }
+				if ( wDOI.indexOf( "doi.org" ) === -1 ) { return false; }
 				wDOI = wDOI.split( "doi.org/" )[1];
 
 				finalResults.push({

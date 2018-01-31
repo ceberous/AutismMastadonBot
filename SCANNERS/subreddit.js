@@ -6,6 +6,7 @@ const PrintNowTime = require( "../UTILS/genericUtils.js" ).printNowTime;
 const redis = require( "../UTILS/redisManager.js" ).redisClient;
 const RU = require( "../UTILS/redisUtils.js" );
 const wSleep = require( "../UTILS/genericUtils.js" ).wSleep;
+const EncodeB64 = require( "../UTILS/genericUtils.js" ).encodeBase64;
 
 var wSearchTerms = [];
 var wFinalPosts = [];
@@ -73,7 +74,7 @@ function PROMISE_ALL_SUBREDDIT_THREAD_FETCH( wURLS ) {
 }
 
 const R_SUBREDDIT_PLACEHOLDER = "SCANNERS.SUBREDDIT.PLACEHOLDER";
-const R_PUBMED_NEW_TRACKING = "SCANNERS.SUBREDDIT.NEW_TRACKING";
+const R_SUBREDDIT_NEW_TRACKING = "SCANNERS.SUBREDDIT.NEW_TRACKING";
 const R_GLOBAL_ALREADY_TRACKED = "SCANNERS.SUBREDDIT.ALREADY_TRACKED";
 function SEARCH_SUBREDDIT( wOptions ) {
 	return new Promise( async function( resolve , reject ) {
@@ -89,10 +90,34 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			var wTopThreads = await FetchXMLFeed( wMainURL );
 
 			// 2.) Search the Each Title
-			var wTopCommentTitles = wTopThreads.map( x => x["atom:title"]["#"].toLowerCase() );
-			wTopCommentTitles = wTopCommentTitles.filter( x => scanText( x ) === true );
-			wTopCommentTitles =  wTopCommentTitles.map( x => "#AutismComments " + x );
-			wFinalPosts = [].concat.apply( [] , wTopCommentTitles );
+			var wTitleOBJS = [];
+			for ( var i = 0; i < wTopThreads.length; ++i ) {
+				if ( scanText( wTopThreads[ i ]["atom:title"]["#"] ) ) {
+					const wPostString = "#Autism " +  wTopThreads[ i ]["atom:title"]["#"] + " " +  wTopThreads[ i ][ "link" ]
+					const wTitleID = wTopThreads[ i ][ "link" ].split( "/r/science/comments/" )[1];
+					wTitleOBJS.push({
+						title: wTopThreads[ i ]["atom:title"]["#"] ,
+						titleB64: EncodeB64( wTitleID ) ,
+						postString: wPostString
+					});
+				}
+			}
+			var wTitleIDS = wTitleOBJS.map( x => x["titleB64"] );
+			await RU.setSetFromArray( redis , R_SUBREDDIT_PLACEHOLDER , wTitleIDS );
+			await RU.setDifferenceStore( redis , R_SUBREDDIT_NEW_TRACKING , R_SUBREDDIT_PLACEHOLDER , R_GLOBAL_ALREADY_TRACKED );
+			await RU.delKey( redis , R_SUBREDDIT_PLACEHOLDER );
+			const wNewTrackingTitles = await RU.getFullSet( redis , R_SUBREDDIT_NEW_TRACKING );
+			if ( wNewTrackingTitles ) {
+				if ( wNewTrackingTitles.length >= 1 ) {
+					wTitleIDS = wTitleIDS.filter( x => wNewTrackingTitles.indexOf( x ) !== -1 );
+					wTitleOBJS = wTitleOBJS.filter( x => wTitleIDS.indexOf( x["titleB64"] ) !== -1 );
+					await RU.delKey( redis , R_SUBREDDIT_NEW_TRACKING );
+					await RU.setSetFromArray( redis , R_GLOBAL_ALREADY_TRACKED , wTitleIDS );
+					for ( var i = 0; i < wTitleOBJS.length; ++i ) {
+						wFinalPosts.push( wTitleOBJS[ i ][ "postString" ] );
+					}
+				}
+			}			
 
 			// 3.) Get 'Comment' Threads for each 'Top' Thread
 			var wTopCommentURLS = wTopThreads.map( x => x["link"] + ".rss" );
@@ -132,14 +157,14 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			// 6.) Filter for 'Un-Posted' Results and Store 'Uneq' ones
 			var wIDS = wResults.map( x => x["id"] );
 			await RU.setSetFromArray( redis , R_SUBREDDIT_PLACEHOLDER , wIDS );
-			await RU.setDifferenceStore( redis , R_PUBMED_NEW_TRACKING , R_SUBREDDIT_PLACEHOLDER , R_GLOBAL_ALREADY_TRACKED );
+			await RU.setDifferenceStore( redis , R_SUBREDDIT_NEW_TRACKING , R_SUBREDDIT_PLACEHOLDER , R_GLOBAL_ALREADY_TRACKED );
 			await RU.delKey( redis , R_SUBREDDIT_PLACEHOLDER );
-			const wNewTracking = await RU.getFullSet( redis , R_PUBMED_NEW_TRACKING );
+			const wNewTracking = await RU.getFullSet( redis , R_SUBREDDIT_NEW_TRACKING );
 			if ( !wNewTracking ) { console.log( "\nSubreddit-Scan --> nothing new found" ); PrintNowTime(); resolve(); return; }
 			if ( wNewTracking.length < 1 ) { console.log( "\nSubreddit-Scan --> nothing new found" ); PrintNowTime(); resolve(); return; }
 			wIDS = wIDS.filter( x => wNewTracking.indexOf( x ) !== -1 );
 			wResults = wResults.filter( x => wIDS.indexOf( x["id"] ) !== -1 );
-			await RU.delKey( redis , R_PUBMED_NEW_TRACKING );
+			await RU.delKey( redis , R_SUBREDDIT_NEW_TRACKING );
 			await RU.setSetFromArray( redis , R_GLOBAL_ALREADY_TRACKED , wIDS );
 
 			// 7.) Post Unique Results
@@ -147,6 +172,7 @@ function SEARCH_SUBREDDIT( wOptions ) {
 			for ( var i = 0; i < wResults.length; ++i ) {
 				wFinalPosts.push( wResults[ i ] );
 			}
+
 			//wFinalPosts = [].concat.apply( [] , wResults );
 			console.log( wFinalPosts );
 			await PostResults( wFinalPosts );
