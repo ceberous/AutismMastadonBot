@@ -58,16 +58,17 @@ function CUSTOM_PUPPETEER_FETCHER( wURL ) {
 
 
 const SAGE_PUB_SEARCH_URL = "http://journals.sagepub.com/action/doSearch?Ppub=20170709-20180109&content=articlesChapters&countTerms=true&field1=Title&field2=Abstract&field3=Title&field4=Abstract&target=default&text1=autism&text2=autism&text3=autistic&text4=autistic&sortBy=Ppub&pageSize=50";
-function SEARCH() {
+const SAGE_PUB_SEARCH_URL_2 = "http://journals.sagepub.com/action/doSearch?Ppub=20170201-20180201&content=articlesChapters&countTerms=true&field1=Title&pageSize=50&target=default&text1=autism&startPage=0&sortBy=Ppub";
+const SAGE_PUB_SEARCH_URL_3 = "http://journals.sagepub.com/action/doSearch?content=articlesChapters&countTerms=true&pageSize=50&sortBy=Ppub&target=default&field1=Abstract&text1=autism&field2=AllField&text2=&Ppub=&Ppub=20170201-20180201&AfterYear=&BeforeYear=&earlycite=on&access=";
+const SAGE_PUB_SEARCH_URL_4 = "http://journals.sagepub.com/action/doSearch?content=articlesChapters&countTerms=true&pageSize=50&sortBy=Ppub&target=default&field1=Abstract&text1=autism&field2=AllField&text2=&Ppub=&Ppub=20170201-20180201&AfterYear=&BeforeYear=&earlycite=on&access=";
+const SAGE_PUB_SEARCH_URL_5 = "http://journals.sagepub.com/action/doSearch?content=articlesChapters&countTerms=true&sortBy=Ppub&target=default&field1=Abstract&text1=autism&field2=AllField&text2=&Ppub=&Ppub=20170201-20180201&AfterYear=&BeforeYear=&earlycite=on&access=&pageSize=50&startPage=1";
+function SEARCH_SINGLE( wURL ) {
 	return new Promise( async function( resolve , reject ) {
 		try {
-
-			console.log( "" );
-			console.log( "Journals.SagePub.com Scan Started" );
-			PrintNowTime();			
-
+			wURL = wURL || SAGE_PUB_SEARCH_URL;
+			
 			// 1. ) Fetch Latest RSS-Results Matching "autism-keywords"
-			var wResults = await CUSTOM_PUPPETEER_FETCHER( SAGE_PUB_SEARCH_URL );
+			var wResults = await CUSTOM_PUPPETEER_FETCHER( wURL );
 			
 			// 2.) Parse Results
 			wResults = PARSE_SEARCH_RESULTS( wResults );
@@ -79,11 +80,28 @@ function SEARCH() {
 			await PostResults( wResults );
 
 			exec( "pkill -9 chrome" , { silent: true ,  async: false } );
+			resolve();
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.searchSingle = SEARCH_SINGLE;
 
+
+function SEARCH() {
+	return new Promise( async function( resolve , reject ) {
+		try {
+			console.log( "" );
+			console.log( "Journals.SagePub.com Scan Started" );
+			PrintNowTime();
+			await SEARCH_SINGLE( SAGE_PUB_SEARCH_URL );
+			await SEARCH_SINGLE( SAGE_PUB_SEARCH_URL_2 );
+			await SEARCH_SINGLE( SAGE_PUB_SEARCH_URL_3 );
+			await SEARCH_SINGLE( SAGE_PUB_SEARCH_URL_4 );
+			await SEARCH_SINGLE( SAGE_PUB_SEARCH_URL_5 );
 			console.log( "" );
 			console.log( "Journals.SagePub.com Scan Finished" );
-			PrintNowTime();
-
+			PrintNowTime();			
 			resolve();
 		}
 		catch( error ) { console.log( error ); reject( error ); }
