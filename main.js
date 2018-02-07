@@ -5,6 +5,7 @@ var JOB_IDS = [];
 
 	await require( "./UTILS/redisManager.js" ).initialize();
 	await require( "./UTILS/mastadonManager.js" ).initialize();
+	await require( "./UTILS/mastadonManager.js" ).postSlackError( "AutismMastadonBot --> main.js --> init()" );
 
 	JOB_IDS.push({ 
 		name: "DAYLIES" ,
@@ -21,9 +22,9 @@ var JOB_IDS = [];
 		pid: schedule.scheduleJob( "1 1-23 * * *" , ()=> { require( "./JOBS/hourly.js" ).scan(); } )
 	});
 
-	//require( "./JOBS/everything.js" ).scan();
+	require( "./JOBS/everything.js" ).scan();
 	//require( "./JOBS/daily.js" ).scan();
 	//require( "./JOBS/twiceDaily.js" ).scan();
-	require( "./JOBS/hourly.js" ).scan();
+	//require( "./JOBS/hourly.js" ).scan();
 
 })();

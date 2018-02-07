@@ -26,8 +26,8 @@ function PARSE_RESULTS( wBody ) {
 
 				if ( wTitle && wDOI ) {
 					if ( wTitle.length > 0 && wDOI.length > 0 ) {
-						var wDOI_ID = wDOI.split( "dx.doi.org/" )[1];
-
+						var wDOI_ID = wDOI.split( "doi.org/" )[1];
+						if ( !wDOI_ID ){ return false; }
 						finalResults.push({
 							title: wTitle ,
 							doi: wDOI_ID ,
