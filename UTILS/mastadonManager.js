@@ -3,6 +3,9 @@ const Masto = require( "mastodon" );
 const slackClient = require( "./slackManager.js" );
 slackClient.initialize();
 var wMastadonClient = null;
+const Eris = require("eris");
+var discordBot = null;
+var discordCreds = null;
 require("shelljs/global");
 const wSleep = require( "./genericUtils.js" ).wSleep;
 
@@ -70,6 +73,7 @@ function ENUMERATE_STATUS_POSTS( wResults ) {
 			for ( var i = 0; i < wResults.length; ++i ) {
 				await POST_STATUS( wResults[ i ] );
 				await slackClient.post( wResults[ i ] , "#autism" );
+				await discordBot.createMessage( discordCreds.papers_channel_id , wResults[ i ] );
 			}
 			resolve();
 		}
@@ -136,6 +140,8 @@ function INITIALIZE() {
 				timeout_ms: ( 60 * 1000 ) ,
 				api_url: creds.api_url
 			});
+			discordCreds = require( "../personal.js" ).DISCORD;
+			discordBot = new Eris( discordCreds.token );
 			console.log( "Mastadon Client Ready" );
 			resolve();
 		}
