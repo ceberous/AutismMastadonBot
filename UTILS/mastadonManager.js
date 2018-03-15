@@ -129,7 +129,7 @@ module.exports.formatPapersAndPost = FORMAT_PAPERS_AND_POST;
 
 
 function INITIALIZE() {
-	return new Promise( function( resolve , reject ) {
+	return new Promise( async function( resolve , reject ) {
 		try {
 			creds = require( "../personal.js" ).MASTADON_CREDS;
 			if ( !creds ) { reject( "no mastadon creds" ); return; }
