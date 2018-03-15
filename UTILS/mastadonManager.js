@@ -142,6 +142,7 @@ function INITIALIZE() {
 			});
 			discordCreds = require( "../personal.js" ).DISCORD;
 			discordBot = new Eris( discordCreds.token );
+			await discordBot.connect();
 			console.log( "Mastadon Client Ready" );
 			resolve();
 		}
@@ -149,3 +150,5 @@ function INITIALIZE() {
 	});
 }
 module.exports.initialize = INITIALIZE;
+
+
