@@ -55,3 +55,28 @@ function GET_FULL_SET( rInstance , wKey ) {
 	});
 }
 module.exports.getFullSet = GET_FULL_SET;
+
+function FILTER_ARRAY_ITEMS_ALREADY_IN_SET( rInstance , wKey , wArray ) {
+	return new Promise( async function( resolve , reject ) {
+		try { 
+			const wTempKey = Math.random().toString( 36 ).substring( 7 );
+			var R_PLACEHOLDER = "SCANNERS." + wTempKey + ".PLACEHOLDER";
+			var R_NEW_TRACKING = "SCANNERS." + wTempKey + ".NEW_TRACKING";
+
+			await SET_SET_FROM_ARRAY( rInstance , R_PLACEHOLDER , wArray );
+			await SET_DIFFERENCE_STORE( rInstance , R_NEW_TRACKING , R_PLACEHOLDER , wKey );
+			await DELETE_KEY( rInstance , R_PLACEHOLDER );
+
+			const wNewTracking = GET_FULL_SET( rInstance , R_NEW_TRACKING );
+			if ( wNewTracking ) {
+				if ( wNewTracking.length > 0 ) {
+					wArray = wArray.filter( x => wNewTracking.indexOf( x ) !== -1 );				
+				}
+			}
+			await DELETE_KEY( rInstance , R_NEW_TRACKING );
+			resolve( wArray );
+		}
+		catch( error ) { console.log( error ); reject( error ); }
+	});
+}
+module.exports.filterArrayItemsAlreadyInSet = FILTER_ARRAY_ITEMS_ALREADY_IN_SET;

@@ -1,3 +1,4 @@
+require("shelljs/global");
 const URI = require( "uri-js" );
 require( "events" ).EventEmitter.prototype._maxListeners = 100;
 function W_SLEEP( ms ) { return new Promise( resolve => setTimeout( resolve , ms ) ); }
@@ -235,3 +236,9 @@ function RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS( wCommonResults ) {
 	});
 }
 module.exports.filterUneqResultsCOMMON = RETURN_UNEQ_RESULTS_AND_SAVE_INTO_REDIS;
+
+
+function KILL_CHROME() {
+	exec( "pkill -9 chrome" , { silent: true ,  async: false } );
+}
+module.exports.killChrome = KILL_CHROME;

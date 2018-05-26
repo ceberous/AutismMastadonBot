@@ -71,15 +71,15 @@ function ENUMERATE_STATUS_POSTS( wResults ) {
 			if ( !wResults ) { resolve(); return; }
 			if ( wResults.length < 1 ) { resolve(); return; }
 			for ( var i = 0; i < wResults.length; ++i ) {
-				await POST_STATUS( wResults[ i ] );
+				//await POST_STATUS( wResults[ i ] );
 				const heading = wResults[ i ].split( " " )[ 0 ];
 				const msg = wResults[ i ].substr( wResults[ i ].indexOf( " " ) + 1 );
-				await slackClient.post( msg , "#autism" );
+				//await slackClient.post( msg , "#autism" );
 				if ( heading !== "#AutismComments" ) {	
-					await discordBot.createMessage( discordCreds.papers_channel_id , msg );
+					//await discordBot.createMessage( discordCreds.papers_channel_id , msg );
 				}
 				else {
-					await discordBot.createMessage( discordCreds.comments_channel_id , msg );
+					//await discordBot.createMessage( discordCreds.comments_channel_id , msg );
 				}
 			}
 			resolve();
